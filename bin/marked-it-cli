@@ -14,6 +14,7 @@
 var fs = require("fs");
 var path = require("path");
 //var markedIt = require("marked-it");
+var common = require("../lib/common");
 var pdfGenerator = require("../lib/pdfGenerator");
 
 var EXTENSION_DITAMAP = ".ditamap";
@@ -106,7 +107,7 @@ if (headerFile) {
 	}
 	
 	if (fd) {
-		headerText = readFile(fd);
+		headerText = common.readFile(fd);
 		fs.close(fd);
 	}
 }
@@ -120,7 +121,7 @@ if (footerFile) {
 	}
 	
 	if (fd) {
-		footerText = readFile(fd);
+		footerText = common.readFile(fd);
 		fs.close(fd);
 	}
 }
@@ -136,7 +137,7 @@ if (!disablePDF) {
 
 		if (fd) {
 			try {
-				var content = readFile(fd);
+				var content = common.readFile(fd);
 				pdfSettings = JSON.parse(content);
 			} catch (e) {
 				console.log("*** Failed to parse pdf settings file " + pdfSettingsFile + ", will use default pdf generation settings.\n" + e.toString());
@@ -185,7 +186,7 @@ function traverse_tree(source, destination) {
 					continue;
 				}
 				
-				var fileText = readFile(readFd);
+				var fileText = common.readFile(readFd);
 				fs.close(readFd);
 				if (!fileText) {
 					console.log("*** Failed to read " + sourcePath);
@@ -228,7 +229,7 @@ function traverse_tree(source, destination) {
 					console.log("*** Failed to open file to write: " + destinationPath + "\n" + e.toString());
 					continue;
 				}
-				var success = writeFile(writeHTMLFd, new Buffer(htmlOutput));
+				var success = common.writeFile(writeHTMLFd, new Buffer(htmlOutput));
 				fs.close(writeHTMLFd);
 				if (!success) {
 					console.log("*** Failed to write: " + destinationPath);
@@ -254,7 +255,7 @@ function traverse_tree(source, destination) {
 						continue;
 					}
 
-					success = writeFile(writeTOCFd, new Buffer(result.mdToc));
+					success = common.writeFile(writeTOCFd, new Buffer(result.mdToc));
 					fs.close(writeTOCFd);
 					if (!success) {
 						console.log("*** Failed to write: " + tocFilename);
@@ -272,7 +273,7 @@ function traverse_tree(source, destination) {
 							continue;
 						}
 	
-						success = writeFile(writeDitamapFd, new Buffer(result.ditamap));
+						success = common.writeFile(writeDitamapFd, new Buffer(result.ditamap));
 						fs.close(writeDitamapFd);
 						if (!success) {
 							console.log("*** Failed to write: " + ditamapFilename);
@@ -295,7 +296,7 @@ function traverse_tree(source, destination) {
 						continue;
 					}
 					
-					success = writeFile(writeHtmlTOCFd, new Buffer(htmlTOC));
+					success = common.writeFile(writeHtmlTOCFd, new Buffer(htmlTOC));
 					fs.close(writeHtmlTOCFd);
 					if (!success) {
 						console.log("*** Failed to write: " + htmlTOCFilename);
@@ -451,42 +452,3 @@ function outputHelpPage() {
 	console.log("<https://hub.jazz.net/project/ggayed/markdownProcessor/overview>.\n");
 }
 
-function readFile(fd) {
-	var readStat = fs.fstatSync(fd);
-	var readBlockSize = readStat.blksize || 4096;
-	var fileSize = readStat.size;
-	if (!fileSize) {
-		return "";
-	}
-	var inBuffer = new Buffer(fileSize);
-	var totalReadCount = 0;
-	do {
-		var length = Math.min(readBlockSize, fileSize - totalReadCount);
-		var readCount = fs.readSync(fd, inBuffer, totalReadCount, length, null);
-		if (!readCount) {
-			break;
-		}
-		totalReadCount += readCount;
-	} while (totalReadCount < fileSize);
-	if (totalReadCount !== fileSize) {
-		return null;
-	}
-	var result = inBuffer.toString("utf8", 0, inBuffer.length);
-	result = result.replace(/^\uFEFF/, ""); /* strip contained BOM characters */
-	return result;
-}
-
-function writeFile(fd, buffer) {
-	var writeStat = fs.fstatSync(fd);
-	var writeBlockSize = writeStat.blksize || 4096;
-	var totalWriteCount = 0;
-	do {
-		var length = Math.min(writeBlockSize, buffer.length - totalWriteCount);
-		var writeCount = fs.writeSync(fd, buffer, totalWriteCount, length, null);
-		if (!writeCount) {
-			return false;
-		}
-		totalWriteCount += writeCount;
-	} while (totalWriteCount < buffer.length);
-	return true;
-}
