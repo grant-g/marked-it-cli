@@ -12,14 +12,15 @@
 		"type": "git",
 		"url": "https://github.com/grant-g/marked-it-cli.git"
 	},
-	"bin": "bin/marked-it-cli",
-	"preferGlobal": true,
-	"directories": {
-		"bin": "./bin"
+	"bin": {
+		"marked-it-cli": "bin/marked-it-cli"
 	},
+	"preferGlobal": true,
+	"files": ["bin/", "lib/"],
 	"dependencies": {
 		"marked-it": "0.1.0",
 		"wkhtmltopdf": "0.1.5",
-		"read-yaml": "^1.0.0"
+		"read-yaml": "^1.0.0",
+		"htmlparser2": "3.8.3"
 	}
 }
