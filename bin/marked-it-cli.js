@@ -13,7 +13,7 @@
 /*eslint-env node */
 var fs = require("fs");
 var path = require("path");
-//var markedIt = require("marked-it");
+var markedIt = require("marked-it");
 var common = require("../lib/common");
 var pdfGenerator = require("../lib/pdfGenerator");
 
@@ -214,13 +214,13 @@ function traverse_tree(source, destination) {
 				if (headerText) {
 					htmlOutput += headerText;
 				} else {
-					htmlOutput += "<html><body>";
+					htmlOutput += "<html>\n<body>\n";
 				}
-				htmlOutput += result.html;
+				htmlOutput += result.html.text;
 				if (footerText) {
 					htmlOutput += footerText;
 				} else {
-					htmlOutput += "</body></html>";
+					htmlOutput += "</body>\n</html>\n";
 				}
 
 				try {
@@ -255,7 +255,7 @@ function traverse_tree(source, destination) {
 						continue;
 					}
 
-					success = common.writeFile(writeTOCFd, new Buffer(result.mdToc));
+					success = common.writeFile(writeTOCFd, new Buffer(result.mdToc.text));
 					fs.close(writeTOCFd);
 					if (!success) {
 						console.log("*** Failed to write: " + tocFilename);
@@ -273,16 +273,24 @@ function traverse_tree(source, destination) {
 							continue;
 						}
 	
-						success = common.writeFile(writeDitamapFd, new Buffer(result.ditamap));
+						success = common.writeFile(writeDitamapFd, new Buffer(result.ditamap.text));
 						fs.close(writeDitamapFd);
 						if (!success) {
 							console.log("*** Failed to write: " + ditamapFilename);
 						} else {						
 							console.log("--> Wrote: " + ditamapFilename);
 						}
+						var errors = result.ditamap.errors;
+						if (errors) {
+							console.log("{");
+							errors.forEach(function(current) {
+								console.log("\t" + current);
+							});
+							console.log("}");
+						}
 					}
 					
-					var htmlTOC = markedIt.generate(result.mdToc, options).html;
+					var htmlTOC = markedIt.generate(result.mdToc.text, options).html.text;
 					if (!htmlTOC) {
 						console.log("*** Failed during conversion of markdown TOC to html file " + tocFilename);
 						continue;

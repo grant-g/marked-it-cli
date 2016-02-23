@@ -16,9 +16,9 @@
 		"marked-it-cli": "bin/marked-it-cli"
 	},
 	"preferGlobal": true,
-	"files": ["bin/", "lib/"],
+	"files": ["bin/", "lib/", "example/"],
 	"dependencies": {
-		"marked-it": "0.1.0",
+		"marked-it": "0.0.1",
 		"wkhtmltopdf": "0.1.5",
 		"read-yaml": "^1.0.0",
 		"htmlparser2": "3.8.3"
