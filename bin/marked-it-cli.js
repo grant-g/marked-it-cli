@@ -444,7 +444,7 @@ function outputHelpPage() {
 	console.log(SWITCH_PDFSETTINGSFILE + "=<pdfSettingsFile>");
 	console.log("\tPath to file with PDF generation settings");
 	console.log(SWITCH_CONREFFILE + "=<conrefFile>");
-	console.log("\tPath to file containing Jekyll-style variable definitions");
+	console.log("\tPath to file containing DITA-style variable definitions");
 	console.log("\n\nPDF Generation\n");
 	console.log("PDF file generation is attempted by default.  For it to succeed wkhtmltopdf");
 	console.log("must be installed, and the path to its binary must be in the OS' PATH");
