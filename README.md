@@ -11,7 +11,7 @@ npm install marked-it-cli
 ## Usage
 
 ```bash
-	node marked-it-cli --sourceDir=<sourceDirectory> --destDir=<destinationDirectory> [OPTIONS]
+node marked-it-cli --sourceDir=<sourceDirectory> --destDir=<destinationDirectory> [OPTIONS]
 ```
 
 ### options [default values]
