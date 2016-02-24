@@ -1,7 +1,7 @@
 {
 	"name": "marked-it-cli",
 	"description": "A CLI for marked-it, adds support for DITA-style conref attributes, uniform headers/footers, and .pdf generation",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"author": "Grant Gayed <grant_gayed@ca.ibm.com>",
 	"license": "EPL-1.0",
 	"homepage": "https://github.com/grant-g/marked-it-cli",
