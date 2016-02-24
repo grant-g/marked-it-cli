@@ -16,6 +16,15 @@ You may need to ```sudo``` the above command since it installs globally.
 marked-it-cli --sourceDir=<sourceDirectory> --destDir=<destinationDirectory> [OPTIONS]
 ```
 
+### Required Arguments
+```
+--sourceDir
+	The path of the directory containing source Markdown files.  Subdirectories will be recursed.
+	
+--destDir
+	The path of the directory to write generated files to.  Directory structures from the source directory will be replicated here.
+```
+
 ### options [default values]
 ```
 -overwrite [false]

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /*******************************************************************************
- * Copyright (c) 2014, 2015 IBM Corporation and others.
+ * Copyright (c) 2014, 2016 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials are made 
  * available under the terms of the Eclipse Public License v1.0 
  * (http://www.eclipse.org/legal/epl-v10.html), and the Eclipse Distribution 
@@ -25,16 +25,16 @@ var EXTENSION_MARKDOWN = ".md";
 var EXTENSION_PDF = ".pdf";
 var EXTENSION_MARKDOWN_TOC = "TOC.md";
 var EXTENSION_MARKDOWN_REGEX = /\.md$/gi;
-var SWITCH_SOURCEDIR = "--sourceDir";
-var SWITCH_DESTDIR = "--destDir";
+var ARG_SOURCEDIR = "--sourceDir";
+var ARG_DESTDIR = "--destDir";
 var SWITCH_OVERWRITE = "-overwrite";
 var SWITCH_ATTRIBUTES = "-disableAttributes";
 var SWITCH_PDF = "-disablePDF";
 var SWITCH_TOC = "-disableTOC";
-var SWITCH_PDFOPTIONSFILE = "--pdfOptionsFile";
-var SWITCH_HEADERFILE = "--headerFile";
-var SWITCH_FOOTERFILE = "--footerFile";
-var SWITCH_CONREFFILE = "--conrefFile";
+var OPTION_PDFOPTIONSFILE = "--pdfOptionsFile";
+var OPTION_HEADERFILE = "--headerFile";
+var OPTION_FOOTERFILE = "--footerFile";
+var OPTION_CONREFFILE = "--conrefFile";
 var COPY_EXTENSIONS = [EXTENSION_HTML, EXTENSION_PDF, ".css", ".bmp", ".jpg", ".png", ".gif", ".svg", ".js", ".txt", ".xml", ".json"];
 var DEFAULT_PDFSETTINGS = {};
 var TIMEOUT_PDF = 1000;
@@ -49,9 +49,9 @@ var pdfQueue = [];
 var switchCounter = 0;
 process.argv.forEach(function(arg) {
 	switchCounter++;
-	if (arg.indexOf(SWITCH_SOURCEDIR) === 0 && arg.indexOf("=") !== -1) {
+	if (arg.indexOf(ARG_SOURCEDIR) === 0 && arg.indexOf("=") !== -1) {
 		sourceDir = arg.substring(arg.indexOf("=") + 1);
-	} else if (arg.indexOf(SWITCH_DESTDIR) === 0 && arg.indexOf("=") !== -1) {
+	} else if (arg.indexOf(ARG_DESTDIR) === 0 && arg.indexOf("=") !== -1) {
 		destinationDir = arg.substring(arg.indexOf("=") + 1);
 	} else if (arg.indexOf(SWITCH_OVERWRITE) === 0) {
 		overwrite = true;
@@ -61,13 +61,13 @@ process.argv.forEach(function(arg) {
 		disableTOC = true;
 	} else if (arg.indexOf(SWITCH_PDF) === 0) {
 		disablePDF = true;
-	} else if (arg.indexOf(SWITCH_PDFOPTIONSFILE) === 0 && arg.indexOf("=") !== -1) {
+	} else if (arg.indexOf(OPTION_PDFOPTIONSFILE) === 0 && arg.indexOf("=") !== -1) {
 		pdfSettingsFile = arg.substring(arg.indexOf("=") + 1);
-	} else if (arg.indexOf(SWITCH_HEADERFILE) === 0 && arg.indexOf("=") !== -1) {
+	} else if (arg.indexOf(OPTION_HEADERFILE) === 0 && arg.indexOf("=") !== -1) {
 		headerFile = arg.substring(arg.indexOf("=") + 1);
-	} else if (arg.indexOf(SWITCH_FOOTERFILE) === 0 && arg.indexOf("=") !== -1) {
+	} else if (arg.indexOf(OPTION_FOOTERFILE) === 0 && arg.indexOf("=") !== -1) {
 		footerFile = arg.substring(arg.indexOf("=") + 1);
-	} else if (arg.indexOf(SWITCH_CONREFFILE) === 0 && arg.indexOf("=") !== -1) {
+	} else if (arg.indexOf(OPTION_CONREFFILE) === 0 && arg.indexOf("=") !== -1) {
 		conrefFile = arg.substring(arg.indexOf("=") + 1);
 	} else {
 		/* don't display errors for the first two args (the node executable and .js file) */
@@ -425,7 +425,12 @@ function done() {
 }
 
 function outputHelpPage() {
-	console.log("\n\nUsage:\n\tmarked-it-cli " + SWITCH_SOURCEDIR + "=<sourceDirectory> " + SWITCH_DESTDIR + "=<destinationDirectory> [OPTIONS]");
+	console.log("\n\nUsage:\n\tmarked-it-cli " + ARG_SOURCEDIR + "=<sourceDirectory> " + ARG_DESTDIR + "=<destinationDirectory> [OPTIONS]");
+	console.log("\nRequired Arguments:\n");
+	console.log(ARG_SOURCEDIR);
+	console.log("\tThe path of the directory containing source Markdown files.  Subdirectories will be recursed.");
+	console.log(ARG_DESTDIR);
+	console.log("\tThe path of the directory to write generated files to.");
 	console.log("\nOptions:\n");
 	console.log(SWITCH_OVERWRITE);
 	console.log("\tOverwrite output files that already exist");
@@ -435,22 +440,22 @@ function outputHelpPage() {
 	console.log("\tDo not generate .pdf files");
 	console.log(SWITCH_TOC);
 	console.log("\tDo not generate Table of Contents files");
-	console.log(SWITCH_HEADERFILE + "=<headerSourceFile>");
+	console.log(OPTION_HEADERFILE + "=<headerSourceFile>");
 	console.log("\tPath to the file with content to be prepended to the generated .html");
-	console.log(SWITCH_FOOTERFILE + "=<footerSourceFile>");
+	console.log(OPTION_FOOTERFILE + "=<footerSourceFile>");
 	console.log("\tPath to the file with content to be appended to the generated .html");
-	console.log(SWITCH_PDFOPTIONSFILE + "=<pdfOptionsFile>");
+	console.log(OPTION_PDFOPTIONSFILE + "=<pdfOptionsFile>");
 	console.log("\tPath to the file with PDF generation options");
-	console.log(SWITCH_CONREFFILE + "=<conrefFile>");
+	console.log(OPTION_CONREFFILE + "=<conrefFile>");
 	console.log("\tPath to the file containing DITA-style variable definitions");
 	console.log("\n\nPDF Generation\n");	
 	console.log("For PDF file generation to succeed, wkhtmltopdf must be installed and the path");
 	console.log("to its binary must be in the OS' PATH environment variable. For wkhtmltopdf info");
 	console.log("and available downloads see <http://wkhtmltopdf.org/>.  Note that on Windows the");
 	console.log("wkhtmltopdf arch (32-/64-bit) should match that of the node.js being used.");
-	console.log("\nIf " + SWITCH_PDFOPTIONSFILE + " is not specified then all default options");
-	console.log("are used.  Custom options are specified in strict JSON format as the camel-cased");
-	console.log("equivalents of the options described at <http://wkhtmltopdf.org/usage/wkhtmltopdf.txt>.");
+	console.log("\nIf " + OPTION_PDFOPTIONSFILE + " is not specified then all default options are used.");
+	console.log("Custom options are specified in strict JSON format as the camel-cased equivalents");
+	console.log("of the options described at <http://wkhtmltopdf.org/usage/wkhtmltopdf.txt>.");
 	console.log("For an example see included file example/examplePDFoptions.");
-	console.log("\n\nProject homepage: <https://github.com/grant-g/marked-it-cli>\n");
+	console.log("\n\nHomepage: <https://github.com/grant-g/marked-it-cli>\n");
 }
