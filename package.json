@@ -18,7 +18,7 @@
 	"preferGlobal": true,
 	"files": ["bin/", "lib/", "example/"],
 	"dependencies": {
-		"marked-it": "0.0.1",
+		"marked-it": "0.0.2",
 		"wkhtmltopdf": "0.1.5",
 		"read-yaml": "^1.0.0",
 		"htmlparser2": "3.8.3"
