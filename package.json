@@ -12,7 +12,7 @@
 		"type": "git",
 		"url": "https://github.com/grant-g/marked-it-cli.git"
 	},
-	"bin": "bin/marked-it-cli",
+	"bin": "bin/marked-it-cli.js",
 	"preferGlobal": true,
 	"files": ["bin/", "lib/", "example/"],
 	"dependencies": {
