@@ -39,6 +39,12 @@ marked-it-cli --sourceDir=<sourceDirectory> --destDir=<destinationDirectory> [OP
 -disableTOC [false]
 	Do not generate Table of Contents files
 
+-verbose [false]
+	Output verbose details
+
+-debug [false]
+	Output even more verbose details
+
 --headerFile=<headerSourceFile>
 	Path to the file with content to be prepended to the generated .html
 
