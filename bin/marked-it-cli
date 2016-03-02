@@ -18,6 +18,7 @@ var ARG_SOURCEDIR = "--sourceDir";
 var ARG_DESTDIR = "--destDir";
 var SWITCH_OVERWRITE = "-overwrite";
 var SWITCH_ATTRIBUTES = "-disableAttributes";
+var SWITCH_FRONTMATTER = "-disableFrontMatter";
 var SWITCH_PDF = "-disablePDF";
 var SWITCH_TOC = "-disableTOC";
 var SWITCH_VERBOSE = "-verbose";
@@ -28,7 +29,7 @@ var OPTION_FOOTERFILE = "--footerFile";
 var OPTION_CONREFFILE = "--conrefFile";
 
 var sourceDir, destDir;
-var overwrite, disableAttributes, disableTOC, disablePDF, verbose, debug;
+var overwrite, disableAttributes, disableFrontMatter, disableTOC, disablePDF, verbose, debug;
 var headerFile, footerFile, pdfOptionsFile, conrefFile;
 
 var switchCounter = 0;
@@ -42,6 +43,8 @@ process.argv.forEach(function(arg) {
 		overwrite = true;
 	} else if (arg.indexOf(SWITCH_ATTRIBUTES) === 0) {
 		disableAttributes = true;
+	} else if (arg.indexOf(SWITCH_FRONTMATTER) === 0) {
+		disableFrontMatter = true;
 	} else if (arg.indexOf(SWITCH_TOC) === 0) {
 		disableTOC = true;
 	} else if (arg.indexOf(SWITCH_PDF) === 0) {
@@ -81,6 +84,7 @@ if (sourceDir && destDir) {
 		destDir: destDir,
 		overwrite: overwrite,
 		disableAttributes: disableAttributes,
+		disableFrontMatter: disableFrontMatter,
 		disableTOC: disableTOC,
 		disablePDF: disablePDF,
 		pdfOptionsFile: pdfOptionsFile,
@@ -104,6 +108,8 @@ function outputHelpPage() {
 	console.log("\tOverwrite output files that already exist");
 	console.log(SWITCH_ATTRIBUTES);
 	console.log("\tDisable processing of Kramdown-style attribute lists");
+	console.log(SWITCH_FRONTMATTER);
+	console.log("\tDisable processing of Jekyll-style front matter blocks");
 	console.log(SWITCH_PDF);
 	console.log("\tDo not generate .pdf files");
 	console.log(SWITCH_TOC);

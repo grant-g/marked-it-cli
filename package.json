@@ -19,7 +19,7 @@
 	"dependencies": {
 		"marked-it": "0.0.2",
 		"wkhtmltopdf": "0.1.5",
-		"read-yaml": "^1.0.0",
+		"js-yaml": "3.5.3",
 		"htmlparser2": "3.8.3"
 	}
 }
