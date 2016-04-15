@@ -20,6 +20,7 @@
 		"marked-it": "0.0.2",
 		"wkhtmltopdf": "0.1.5",
 		"js-yaml": "3.5.3",
-		"htmlparser2": "3.8.3"
+		"htmlparser2": "3.8.3",
+		"mkdirp": "0.5.1"
 	}
 }
