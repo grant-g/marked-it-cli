@@ -15,29 +15,35 @@ var mdProcessor = require("../lib/mdProcessor");
 var logger = require("./logger");
 
 var ARG_SOURCEDIR = "--sourceDir";
-var ARG_DESTDIR = "--destDir";
-var SWITCH_OVERWRITE = "-overwrite";
-var SWITCH_ATTRIBUTES = "-disableAttributes";
-var SWITCH_FRONTMATTER = "-disableFrontMatter";
-var SWITCH_PDF = "-disablePDF";
-var SWITCH_TOC = "-disableTOC";
-var SWITCH_VERBOSE = "-verbose";
-var SWITCH_DEBUG = "-debug";
-var OPTION_PDFOPTIONSFILE = "--pdfOptionsFile";
-var OPTION_HEADERFILE = "--headerFile";
-var OPTION_FOOTERFILE = "--footerFile";
-var OPTION_CONREFFILE = "--conrefFile";
+var ARG_OUTPUT = "--output";
+var SWITCH_OVERWRITE = "--overwrite";
+var SWITCH_ATTRIBUTES = "--disable-attributes";
+var SWITCH_FRONTMATTER = "--disable-front-matter";
+var SWITCH_PDF = "--gen-pdf";
+var SWITCH_VERBOSE = "--verbose";
+var SWITCH_DEBUG = "--debug";
+var SWITCH_TOCXML = "--toc-xml";
+var SWITCH_TOCHTML = "--toc-html";
+var SWITCH_TOCDITA = "--toc-dita";
+var OPTION_TOC_DEPTH = "--toc-depth";
+var OPTION_PDFOPTIONSFILE = "--pdf-options-file";
+var OPTION_HEADERFILE = "--header-file";
+var OPTION_FOOTERFILE = "--footer-file";
+var OPTION_CONREFFILE = "--conref-file";
+var SWITCH_HELP = "--help";
+
+var DEFAULT_TOC_DEPTH = 3;
 
 var sourceDir, destDir;
-var overwrite, disableAttributes, disableFrontMatter, disableTOC, disablePDF, verbose, debug;
+var overwrite, disableAttributes, disableFrontMatter, genPdf, verbose, debug;
 var headerFile, footerFile, pdfOptionsFile, conrefFile;
+var tocXML, tocDITA, tocHTML, tocDepth;
+var help;
 
 var switchCounter = 0;
 process.argv.forEach(function(arg) {
 	switchCounter++;
-	if (arg.indexOf(ARG_SOURCEDIR) === 0 && arg.indexOf("=") !== -1) {
-		sourceDir = arg.substring(arg.indexOf("=") + 1);
-	} else if (arg.indexOf(ARG_DESTDIR) === 0 && arg.indexOf("=") !== -1) {
+	if (arg.indexOf(ARG_OUTPUT) === 0 && arg.indexOf("=") !== -1) {
 		destDir = arg.substring(arg.indexOf("=") + 1);
 	} else if (arg.indexOf(SWITCH_OVERWRITE) === 0) {
 		overwrite = true;
@@ -45,14 +51,20 @@ process.argv.forEach(function(arg) {
 		disableAttributes = true;
 	} else if (arg.indexOf(SWITCH_FRONTMATTER) === 0) {
 		disableFrontMatter = true;
-	} else if (arg.indexOf(SWITCH_TOC) === 0) {
-		disableTOC = true;
 	} else if (arg.indexOf(SWITCH_PDF) === 0) {
-		disablePDF = true;
+		genPdf = true;
 	} else if (arg.indexOf(SWITCH_VERBOSE) === 0) {
 		verbose = true;
 	} else if (arg.indexOf(SWITCH_DEBUG) === 0) {
 		debug = true;
+	} else if (arg.indexOf(SWITCH_TOCXML) === 0) {
+		tocXML = true;
+	} else if (arg.indexOf(SWITCH_TOCHTML) === 0) {
+		tocHTML = true;
+	} else if (arg.indexOf(SWITCH_TOCDITA) === 0) {
+		tocDITA = true;
+	} else if (arg.indexOf(OPTION_TOC_DEPTH) === 0 && arg.indexOf("=") !== -1) {
+		tocDepth = arg.substring(arg.indexOf("=") + 1);
 	} else if (arg.indexOf(OPTION_PDFOPTIONSFILE) === 0 && arg.indexOf("=") !== -1) {
 		pdfOptionsFile = arg.substring(arg.indexOf("=") + 1);
 	} else if (arg.indexOf(OPTION_HEADERFILE) === 0 && arg.indexOf("=") !== -1) {
@@ -61,6 +73,10 @@ process.argv.forEach(function(arg) {
 		footerFile = arg.substring(arg.indexOf("=") + 1);
 	} else if (arg.indexOf(OPTION_CONREFFILE) === 0 && arg.indexOf("=") !== -1) {
 		conrefFile = arg.substring(arg.indexOf("=") + 1);
+	} else if (arg.indexOf(SWITCH_HELP) === 0) {
+		help = true;
+	} else if (arg.indexOf("--") !== 0) {
+		sourceDir = arg;
 	} else {
 		/* don't display errors for the first two args (the node executable and .js file) */
 		if (switchCounter > 2) {
@@ -69,8 +85,9 @@ process.argv.forEach(function(arg) {
 	}
 });
 
-if (sourceDir && destDir) {
-	console.log("\nProcessing source directory: " + sourceDir + "...\n");
+if (help || !sourceDir || !destDir) {
+	outputHelpPage();
+} else {
 	var loggerLevel = logger.WARNING;
 	if (verbose) {
 		loggerLevel = logger.INFO;
@@ -79,29 +96,39 @@ if (sourceDir && destDir) {
 		loggerLevel = logger.DEBUG;
 	}
 	var logger = new logger.Logger(loggerLevel);
+	
+	tocDepth = parseInt(tocDepth || DEFAULT_TOC_DEPTH);
+	if (isNaN(tocDepth) || tocDepth < 0) {
+		tocDepth = DEFAULT_TOC_DEPTH;
+		logger.warning("Invalid " + OPTION_TOC_DEPTH + " value, using default value of " + DEFAULT_TOC_DEPTH + ".");
+	}
+
+	console.log("\nProcessing source directory: " + sourceDir + "...\n");
+
 	mdProcessor.generate({
 		sourceDir: sourceDir,
 		destDir: destDir,
 		overwrite: overwrite,
 		disableAttributes: disableAttributes,
 		disableFrontMatter: disableFrontMatter,
-		disableTOC: disableTOC,
-		disablePDF: disablePDF,
+		generatePdf: genPdf,
 		pdfOptionsFile: pdfOptionsFile,
+		tocXML: tocXML,
+		tocHTML: tocHTML,
+		tocDITA: tocDITA,
+		tocDepth: tocDepth,
 		headerFile: headerFile,
 		footerFile: footerFile,
 		conrefFile: conrefFile
 	}, logger);
-} else {
-	outputHelpPage();
 }
 
 function outputHelpPage() {
-	console.log("\n\nUsage:\n\tmarked-it-cli " + ARG_SOURCEDIR + "=<sourceDirectory> " + ARG_DESTDIR + "=<destinationDirectory> [OPTIONS]");
-	console.log("\nRequired Args:\n");
-	console.log(ARG_SOURCEDIR);
+	console.log("\n\nUsage:\n\tmarked-it-cli <sourceDirectory> " + ARG_OUTPUT + "=<destinationDirectory> [OPTIONS]");
+	console.log("\nRequired Arguments:\n");
+	console.log("<sourceDirectory>");
 	console.log("\tThe path of the directory containing source Markdown files");
-	console.log(ARG_DESTDIR);
+	console.log(ARG_OUTPUT + "=<destinationDirectory>");
 	console.log("\tThe path of the directory to write generated files to");
 	console.log("\nOptions:\n");
 	console.log(SWITCH_OVERWRITE);
@@ -110,30 +137,36 @@ function outputHelpPage() {
 	console.log("\tDisable processing of Kramdown-style attribute lists");
 	console.log(SWITCH_FRONTMATTER);
 	console.log("\tDisable processing of Jekyll-style front matter blocks");
-	console.log(SWITCH_PDF);
-	console.log("\tDo not generate .pdf files");
-	console.log(SWITCH_TOC);
-	console.log("\tDo not generate Table of Contents files");
+	console.log(SWITCH_TOCXML);
+	console.log("\tGenerate a toc.xml file for directories containing a valid toc.txt");
+	console.log(SWITCH_TOCHTML);
+	console.log("\tGenerate a toc.html file for directories containing a valid toc.txt");
+	console.log(SWITCH_TOCDITA);
+	console.log("\tGenerate a toc.ditamap file for directories containing a valid toc.txt");
+	console.log(OPTION_TOC_DEPTH + "=<maxHeaderLevel>");
+	console.log("\tSet the maximum header level that will appear in toc files (default=" + DEFAULT_TOC_DEPTH + ")");
 	console.log(SWITCH_VERBOSE);
 	console.log("\tOutput verbose details");
 	console.log(SWITCH_DEBUG);
 	console.log("\tOutput even more verbose details");
+	console.log(SWITCH_PDF);
+	console.log("\tGenerate .pdf files");
+	console.log(OPTION_PDFOPTIONSFILE + "=<pdfOptionsFile>");
+	console.log("\tPath to the file with PDF generation options");
 	console.log(OPTION_HEADERFILE + "=<headerSourceFile>");
 	console.log("\tPath to the file with content to be prepended to the generated .html");
 	console.log(OPTION_FOOTERFILE + "=<footerSourceFile>");
 	console.log("\tPath to the file with content to be appended to the generated .html");
-	console.log(OPTION_PDFOPTIONSFILE + "=<pdfOptionsFile>");
-	console.log("\tPath to the file with PDF generation options");
 	console.log(OPTION_CONREFFILE + "=<conrefFile>");
 	console.log("\tPath to the file containing DITA-style variable definitions");
-	console.log("\n\nPDF Generation\n");	
+	console.log("\nPDF Generation\n");	
 	console.log("For PDF file generation to succeed, wkhtmltopdf must be installed and the path");
 	console.log("to its binary must be in the OS' PATH environment variable. For wkhtmltopdf info");
 	console.log("and available downloads see <http://wkhtmltopdf.org/>.  Note that on Windows the");
-	console.log("wkhtmltopdf arch (32-/64-bit) should match that of the node.js being used.");
+	console.log("wkhtmltopdf arch (32-/64-bit) must match that of the node.js being used.");
 	console.log("\nIf " + OPTION_PDFOPTIONSFILE + " is not specified then all default options are used.");
 	console.log("Custom options are specified in strict JSON format as the camel-cased equivalents");
 	console.log("of the options described at <http://wkhtmltopdf.org/usage/wkhtmltopdf.txt>.");
 	console.log("For an example see included file example/examplePDFoptions.");
-	console.log("\n\nHomepage: <https://github.com/grant-g/marked-it-cli>\n");
+	console.log("\nHomepage: <https://github.com/grant-g/marked-it-cli>\n");
 }
