@@ -75,7 +75,7 @@ process.argv.forEach(function(arg) {
 		conrefFile = arg.substring(arg.indexOf("=") + 1);
 	} else if (arg.indexOf(SWITCH_HELP) === 0) {
 		help = true;
-	} else if (arg.indexOf("--") !== 0) {
+	} else if (arg.indexOf("-") !== 0) {
 		sourceDir = arg;
 	} else {
 		/* don't display errors for the first two args (the node executable and .js file) */
