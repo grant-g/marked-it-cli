@@ -1,0 +1,7 @@
+  <footer>
+    <div>
+      <p>Copyright &copy; {{ site.data.copyright.year }}. All Rights Reserved.</p>
+    </div>
+  </footer>
+</body>
+</html>

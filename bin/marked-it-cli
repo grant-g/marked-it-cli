@@ -138,11 +138,11 @@ function outputHelpPage() {
 	console.log(SWITCH_FRONTMATTER);
 	console.log("\tDisable processing of Jekyll-style front matter blocks");
 	console.log(SWITCH_TOCXML);
-	console.log("\tGenerate a toc.xml file for directories containing a valid toc.txt");
+	console.log("\tGenerate a toc.xml file for directories containing a valid toc file");
 	console.log(SWITCH_TOCHTML);
-	console.log("\tGenerate a toc.html file for directories containing a valid toc.txt");
+	console.log("\tGenerate a toc.html file for directories containing a valid toc file");
 	console.log(SWITCH_TOCDITA);
-	console.log("\tGenerate a toc.ditamap file for directories containing a valid toc.txt");
+	console.log("\tGenerate a toc.ditamap file for directories containing a valid toc file");
 	console.log(OPTION_TOC_DEPTH + "=<maxHeaderLevel>");
 	console.log("\tSet the maximum header level that will appear in toc files (default=" + DEFAULT_TOC_DEPTH + ")");
 	console.log(SWITCH_VERBOSE);
@@ -159,14 +159,6 @@ function outputHelpPage() {
 	console.log("\tPath to the file with content to be appended to the generated .html");
 	console.log(OPTION_CONREFFILE + "=<conrefFile>");
 	console.log("\tPath to the file containing DITA-style variable definitions");
-	console.log("\nPDF Generation\n");	
-	console.log("For PDF file generation to succeed, wkhtmltopdf must be installed and the path");
-	console.log("to its binary must be in the OS' PATH environment variable. For wkhtmltopdf info");
-	console.log("and available downloads see <http://wkhtmltopdf.org/>.  Note that on Windows the");
-	console.log("wkhtmltopdf arch (32-/64-bit) must match that of the node.js being used.");
-	console.log("\nIf " + OPTION_PDFOPTIONSFILE + " is not specified then all default options are used.");
-	console.log("Custom options are specified in strict JSON format as the camel-cased equivalents");
-	console.log("of the options described at <http://wkhtmltopdf.org/usage/wkhtmltopdf.txt>.");
-	console.log("For an example see included file example/examplePDFoptions.");
+	console.log("\nUse of these options is demonstrated in the \"examples\" directory.");
 	console.log("\nHomepage: <https://github.com/grant-g/marked-it-cli>\n");
 }

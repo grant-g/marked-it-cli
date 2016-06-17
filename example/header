@@ -1,0 +1,8 @@
+<html lang="en">
+<head>
+  <title>{{ site.data.name }} info</title>
+  <meta charset="utf-8"></meta>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"></meta>
+  <meta name="viewport" content="width=device-width, initial-scale=1"></meta>
+</head>
+<body>

@@ -1,0 +1,4 @@
+This example demonstrates the use of various marked-it-cli features.
+Example tool invocation to generate from this example:
+
+node ./bin/marked-it-cli ./example --output=./exampleOutput --header-file=./example/header --footer-file=./example/footer --gen-pdf --pdf-options=./example/pdfOptions --conref-file=./example/conref.yml --toc.xml
