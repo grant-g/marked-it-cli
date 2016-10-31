@@ -67,5 +67,5 @@ If ```--pdfOptionsFile``` is not specified then all default options will be used
 
 The "examples" directory demonstrates the CLI's features.  To generate it use command:
 ```
-node ./bin/marked-it-cli ./example --output=./exampleOutput --header-file=./example/header --footer-file=./example/footer --gen-pdf --pdf-options=./example/pdfOptions --conref-file=./example/conref.yml --toc.xml
+node ./bin/marked-it-cli ./example --output=./exampleOutput --header-file=./example/header --footer-file=./example/footer --gen-pdf --pdf-options-file=./example/pdfOptions --conref-file=./example/conref.yml --toc-xml
 ```
