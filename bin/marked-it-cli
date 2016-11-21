@@ -12,7 +12,7 @@
 
 /*eslint-env node */
 var mdProcessor = require("../lib/mdProcessor");
-var logger = require("./logger");
+var logger = require("../lib/logger");
 
 var ARG_SOURCEDIR = "--sourceDir";
 var ARG_OUTPUT = "--output";
@@ -27,6 +27,7 @@ var SWITCH_TOCHTML = "--toc-html";
 var SWITCH_TOCDITA = "--toc-dita";
 var OPTION_TOC_DEPTH = "--toc-depth";
 var OPTION_PDFOPTIONSFILE = "--pdf-options-file";
+var OPTION_EXTENSIONFILE = "--extension-file";
 var OPTION_HEADERFILE = "--header-file";
 var OPTION_FOOTERFILE = "--footer-file";
 var OPTION_CONREFFILE = "--conref-file";
@@ -37,6 +38,7 @@ var DEFAULT_TOC_DEPTH = 3;
 var sourceDir, destDir;
 var overwrite, disableAttributes, disableFrontMatter, genPdf, verbose, debug;
 var headerFile, footerFile, pdfOptionsFile, conrefFile;
+var extensionFiles = [];
 var tocXML, tocDITA, tocHTML, tocDepth;
 var help;
 
@@ -67,6 +69,8 @@ process.argv.forEach(function(arg) {
 		tocDepth = arg.substring(arg.indexOf("=") + 1);
 	} else if (arg.indexOf(OPTION_PDFOPTIONSFILE) === 0 && arg.indexOf("=") !== -1) {
 		pdfOptionsFile = arg.substring(arg.indexOf("=") + 1);
+	} else if (arg.indexOf(OPTION_EXTENSIONFILE) === 0 && arg.indexOf("=") !== -1) {
+		extensionFiles.push(arg.substring(arg.indexOf("=") + 1));
 	} else if (arg.indexOf(OPTION_HEADERFILE) === 0 && arg.indexOf("=") !== -1) {
 		headerFile = arg.substring(arg.indexOf("=") + 1);
 	} else if (arg.indexOf(OPTION_FOOTERFILE) === 0 && arg.indexOf("=") !== -1) {
@@ -113,6 +117,7 @@ if (help || !sourceDir || !destDir) {
 		disableFrontMatter: disableFrontMatter,
 		generatePdf: genPdf,
 		pdfOptionsFile: pdfOptionsFile,
+		extensionFiles: extensionFiles,
 		tocXML: tocXML,
 		tocHTML: tocHTML,
 		tocDITA: tocDITA,
@@ -153,6 +158,8 @@ function outputHelpPage() {
 	console.log("\tGenerate .pdf files");
 	console.log(OPTION_PDFOPTIONSFILE + "=<pdfOptionsFile>");
 	console.log("\tPath to the file with PDF generation options");
+	console.log(OPTION_EXTENSIONFILE + "=<extensionFile>");
+	console.log("\tPath to a file containing extensions for customizing generation");
 	console.log(OPTION_HEADERFILE + "=<headerSourceFile>");
 	console.log("\tPath to the file with content to be prepended to the generated .html");
 	console.log(OPTION_FOOTERFILE + "=<footerSourceFile>");
