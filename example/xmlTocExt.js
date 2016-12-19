@@ -51,7 +51,7 @@ xml.toc.onTopic = function(topic, data) {
 	return data.domToHtml(topicDom, {xmlMode: true});
 }
 
-xml.toc.top.onComplete = function(html, data) {
+xml.toc.top.onComplete = function(xml, data) {
 	if (!headerText && !footerText) {
 		return; /* no change */
 	}
@@ -60,7 +60,7 @@ xml.toc.top.onComplete = function(html, data) {
 	if (headerText) {
 		result += headerText;
 	}
-	result += html;
+	result += xml;
 	if (footerText) {
 		result += footerText;
 	}
