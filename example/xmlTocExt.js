@@ -9,7 +9,7 @@ var NOTOC = "notoc";
 var PREFIX_TOC = "toc-";
 
 var html = {};
-var xml = {toc: {top: {}}};
+var xml = {toc: {}};
 
 html.onHeading = function(html, data) {
 	var heading = data.htmlToDom(html);
@@ -51,7 +51,7 @@ xml.toc.onTopic = function(topic, data) {
 	return data.domToHtml(topicDom, {xmlMode: true});
 }
 
-xml.toc.top.onComplete = function(xml, data) {
+xml.toc.onComplete = function(xml, data) {
 	if (!headerText && !footerText) {
 		return; /* no change */
 	}
