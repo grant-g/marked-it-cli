@@ -21,8 +21,8 @@
 		"wkhtmltopdf": "0.1.5",
 		"js-yaml": "3.5.3",
 		"htmlparser2": "3.8.3",
-		"mkdirp": "0.5.1",
 		"pretty-data": "0.40.0",
-		"js-beautify": "1.6.4"
+		"js-beautify": "1.6.4",
+		"fs-extra": "1.0.0"
 	}
 }
