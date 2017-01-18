@@ -23,6 +23,7 @@
 		"htmlparser2": "3.8.3",
 		"pretty-data": "0.40.0",
 		"js-beautify": "1.6.4",
-		"fs-extra": "1.0.0"
+		"fs-extra": "1.0.0",
+		"highlight.js": "9.9.0"
 	}
 }
