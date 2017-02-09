@@ -1,29 +1,49 @@
 {
-	"name": "marked-it-cli",
-	"description": "A CLI for marked-it, adds support for DITA-style conref attributes, uniform headers/footers, and .pdf generation",
-	"version": "0.1.3",
-	"author": "Grant Gayed <grant_gayed@ca.ibm.com>",
-	"license": "EPL-1.0",
-	"homepage": "https://github.com/grant-g/marked-it-cli",
-	"bugs": "https://github.com/grant-g/marked-it-cli/issues",
-	"keywords": ["markdown", "marked", "kramdown", "html", "dita-map", "conref", "pdf"],
-
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/grant-g/marked-it-cli.git"
-	},
-	"bin": {
-		"marked-it-cli": "bin/marked-it-cli"
-	},
-	"files": ["bin/", "lib/", "example/"],
-	"dependencies": {
-		"marked-it": "0.0.2",
-		"wkhtmltopdf": "0.1.5",
-		"js-yaml": "3.5.3",
-		"htmlparser2": "3.8.3",
-		"pretty-data": "0.40.0",
-		"js-beautify": "1.6.4",
-		"fs-extra": "1.0.0",
-		"highlight.js": "9.9.0"
-	}
+  "name": "@markedit/marked-it-cli",
+  "description": "A CLI for marked-it, adds support for DITA-style conref attributes, uniform headers/footers, and .pdf generation",
+  "version": "0.5.0",
+  "author": "Grant Gayed <grant_gayed@ca.ibm.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/grant-g/marked-it-cli",
+  "bugs": {
+    "url": "https://github.com/grant-g/marked-it-cli/issues"
+  },
+  "keywords": [
+    "markdown",
+    "marked",
+    "kramdown",
+    "html",
+    "dita",
+    "conref",
+    "pdf"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/grant-g/marked-it-cli.git"
+  },
+  "bin": {
+    "marked-it-cli": "bin/marked-it-cli"
+  },
+  "files": [
+    "bin/",
+    "lib/",
+    "example/"
+  ],
+  "dependencies": {
+    "marked-it": "0.0.2",
+    "wkhtmltopdf": "0.1.5",
+    "js-yaml": "3.5.3",
+    "htmlparser2": "3.8.3",
+    "pretty-data": "0.40.0",
+    "js-beautify": "1.6.4",
+    "fs-extra": "1.0.0",
+    "highlight.js": "9.9.0"
+  },
+  "directories": {
+    "example": "example"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
 }
