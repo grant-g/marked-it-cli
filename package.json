@@ -1,7 +1,7 @@
 {
   "name": "@marked-it/marked-it-cli",
   "description": "A CLI for marked-it, adds support for DITA-style conref attributes, uniform headers/footers, and .pdf generation",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "author": "Grant Gayed <grant_gayed@ca.ibm.com>",
   "license": "MIT",
   "homepage": "https://github.com/grant-g/marked-it-cli",
@@ -30,7 +30,7 @@
     "example/"
   ],
   "dependencies": {
-    "marked-it": "0.0.2",
+    "@marked-it/marked-it": "0.6.0",
     "wkhtmltopdf": "0.1.5",
     "js-yaml": "3.5.3",
     "htmlparser2": "3.8.3",
