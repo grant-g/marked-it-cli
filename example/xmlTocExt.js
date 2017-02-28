@@ -98,6 +98,7 @@ xml.toc.file.onGenerate = function(xml, data) {
 				});
 			}
 		});
+		return data.domToInnerHtml(root, {xmlMode: true});
 	}
 
 	var match = REGEX_LINK.exec(data.source);
