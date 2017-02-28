@@ -4,7 +4,7 @@ var CAPTION = "caption";
 var CAPTION_SIDE = "caption-side";
 
 html.onTable = function(html, data) {
-	var table = data.htmlToDom(html);
+	var table = data.htmlToDom(html)[0];
 	var captionText = table.attribs[CAPTION];
 	if (!captionText) {
 		return; /* nothing to do */
@@ -14,7 +14,7 @@ html.onTable = function(html, data) {
 	delete table.attribs[CAPTION];
 	delete table.attribs[CAPTION_SIDE];
 
-	var caption = data.htmlToDom("<caption>" + captionText + "</caption>");
+	var caption = data.htmlToDom("<caption>" + captionText + "</caption>")[0];
 	if (captionSide) {
 		caption.attribs[CAPTION_SIDE] = captionSide;
 	}

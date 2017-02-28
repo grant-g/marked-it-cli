@@ -16,7 +16,7 @@ var html = {};
 var xml = {toc: {file: {}}};
 
 html.onHeading = function(html, data) {
-	var heading = data.htmlToDom(html);
+	var heading = data.htmlToDom(html)[0];
 	var changed = false;
 	Object.keys(heading.attribs).forEach(function(key) {
 		if (key.indexOf(PREFIX_TOC) === 0) {
@@ -31,18 +31,18 @@ html.onHeading = function(html, data) {
 };
 
 xml.toc.onTopic = function(topic, data) {
-	var heading = data.htmlToDom(data.heading);
+	var heading = data.htmlToDom(data.heading)[0];
 	var attributes = heading.attribs;
 	if (attributes[NOTOC]) {
 		return ""; /* do not generate a TOC entry for this header */
 	}
 
-	var topicDom = data.htmlToDom(topic);
+	var topicDom = data.htmlToDom(topic)[0];
 	var changed = false;
 	Object.keys(attributes).forEach(function(key) {
 		if (key.indexOf(PREFIX_TOC) === 0) {
 			var name = key.substring(PREFIX_TOC.length);
-			var property = data.htmlToDom("<property name='" + name + "' value='" + attributes[key] + "'>\n</property>\n");
+			var property = data.htmlToDom("<property name='" + name + "' value='" + attributes[key] + "'>\n</property>\n")[0];
 			data.domUtils.appendChild(topicDom, property);
 			changed = true;
 		}
@@ -78,27 +78,26 @@ xml.toc.file.onGenerate = function(xml, data) {
 	var CLASS_TOPICGROUP = "topicgroup";
 	var ATTRIBUTE_CLASS = "class";
 
-	/* if injecting TOC from a .md file add an <anchor> child to all non-top-level topics */
+	/* if injecting TOC from a .md file then replace all immediate children with <anchor>s */
 	if (/\.md\s*$/.test(data.source)) {
-		var root = data.htmlToDom(xml);
-		var topics = data.domUtils.find(function(node) {return node.name && node.name.toLowerCase() === "topic";}, [root], true, Infinity);
-		topics.forEach(function(topic) {
-			if (topic.parent) {
-				var urlObject = url.parse(topic.attribs.href);
-				var pathname = urlObject.pathname.substring(urlObject.pathname.lastIndexOf("/") + 1);
-				pathname = pathname.substring(0, pathname.lastIndexOf("."));
-				var anchorId = pathname + "_" + urlObject.hash.substring(1);
-				var anchor = data.htmlToDom('<anchor id="' + anchorId + '" />');
-				var children = data.domUtils.getChildren(topic);
-				if (!children.length) {
-					data.domUtils.appendChild(topic, anchor);
-				} else {
-					var firstChild = children[0];
-					data.domUtils.prepend(firstChild, anchor);
-				}
+		var root = data.htmlToDom("<root></root>", {xmlMode: true})[0];
+		var docRoots = data.htmlToDom(xml, {xmlMode: true});
+		docRoots.forEach(function(docRoot) {
+			data.domUtils.appendChild(root, docRoot);
+			if (docRoot.name === "topic") {
+				var children = data.domUtils.getChildren(docRoot);
+				children.forEach(function(child) {
+					if (child.attribs) {
+						var urlObject = url.parse(child.attribs.href);
+						var pathname = urlObject.pathname.substring(urlObject.pathname.lastIndexOf("/") + 1);
+						pathname = pathname.substring(0, pathname.lastIndexOf("."));
+						var anchorId = pathname + "_" + urlObject.hash.substring(1);
+						var anchor = data.htmlToDom('<anchor id="' + anchorId + '" label="' + child.attribs.label + '" />', {xmlMode: true})[0];
+						data.domUtils.replaceElement(child, anchor);
+					}
+				});
 			}
 		});
-		return data.domToHtml(root, {xmlMode: true});
 	}
 
 	var match = REGEX_LINK.exec(data.source);
