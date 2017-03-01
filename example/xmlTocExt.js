@@ -88,12 +88,8 @@ xml.toc.file.onGenerate = function(xml, data) {
 				var children = data.domUtils.getChildren(docRoot);
 				children.forEach(function(child) {
 					if (child.attribs) {
-						var urlObject = url.parse(child.attribs.href);
-						var pathname = urlObject.pathname.substring(urlObject.pathname.lastIndexOf("/") + 1);
-						pathname = pathname.substring(0, pathname.lastIndexOf("."));
-						var anchorId = pathname + "_" + urlObject.hash.substring(1);
-						var anchor = data.htmlToDom('<anchor id="' + anchorId + '" label="' + child.attribs.label + '" />', {xmlMode: true})[0];
-						data.domUtils.replaceElement(child, anchor);
+						var anchorElement = data.htmlToDom('<property name="type" value="anchor" />', {xmlMode: true})[0];
+						data.domUtils.appendChild(child, anchorElement);
 					}
 				});
 			}
