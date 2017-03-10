@@ -1,6 +1,6 @@
 # marked-it-cli
 
-A command-line interface for [marked-it](https://github.com/grant-g/marked-it "marked-it Git repo") that adds support for conref attributes, uniform headers/footers, and .pdf generation.
+A command-line interface for [marked-it](https://github.ibm.com/Grant-Gayed/marked-it "marked-it Git repo") that adds support for conref attributes, uniform headers/footers, and .pdf generation.
 
 ## Install
 
