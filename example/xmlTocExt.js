@@ -1,3 +1,24 @@
+/**
+ * marked-it-cli
+ *
+ * Copyright (c) 2014, 2017 IBM Corporation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without restriction,
+ * including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial
+ * portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
+ * LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 var FILENAME_HEADER = "header-xml";
 var FILENAME_FOOTER = null;
 
@@ -94,18 +115,18 @@ xml.toc.file.onGenerate = function(xml, data) {
 			var className = classes[i].toLowerCase();
 			if (className === CLASS_NAVGROUP) {
 				if (navgroup) {
-					logger.warn("Encountered new .navgroup before previous .navgroup '" + navgroup.id + "' was ended");
+					logger.warning("Encountered new .navgroup before previous .navgroup '" + navgroup.id + "' was ended");
 				} else {
 					var id = data.attributes[ATTRIBUTE_ID];
 					if (!id) {
-						logger.warn("Encountered .navgroup without an 'id' attribute, on toc item: " + data.source);
+						logger.warning("Encountered .navgroup without an 'id' attribute, on toc item: " + data.source);
 					} else {
 						navgroup = {id: id, level: data.level};
 					}					
 				}
 			} else if (className === CLASS_NAVGROUP_END) {
 				if (!navgroup) {
-					logger.warn("Encountered .navgroup-end while not in a previous .navgroup, on toc item: " + data.source);
+					logger.warning("Encountered .navgroup-end while not in a previous .navgroup, on toc item: " + data.source);
 				}
 				clearNavgroupAtEnd = true;
 			}
@@ -113,7 +134,7 @@ xml.toc.file.onGenerate = function(xml, data) {
 	}
 
 	if (navgroup && data.level < navgroup.level) {
-		logger.warn("Missing .navgroup-end for .navgroup '" + navgroup.id + "' (must be present and at the same indentation level)");
+		logger.warning("Missing .navgroup-end for .navgroup '" + navgroup.id + "' (must be present and at the same indentation level)");
 		navgroup = null;
 	}
 
