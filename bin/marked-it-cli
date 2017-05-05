@@ -34,8 +34,6 @@ var SWITCH_PDF = "--gen-pdf";
 var SWITCH_VERBOSE = "--verbose";
 var SWITCH_DEBUG = "--debug";
 var SWITCH_TOCXML = "--toc-xml";
-var SWITCH_TOCHTML = "--toc-html";
-var SWITCH_TOCDITA = "--toc-dita";
 var OPTION_TOC_DEPTH = "--toc-depth";
 var OPTION_PDFOPTIONSFILE = "--pdf-options-file";
 var OPTION_EXTENSIONFILE = "--extension-file";
@@ -50,7 +48,7 @@ var sourceDir, destDir;
 var overwrite, disableAttributes, disableFrontMatter, genPdf, verbose, debug;
 var headerFile, footerFile, pdfOptionsFile, conrefFile;
 var extensionFiles = [];
-var tocXML, tocDITA, tocHTML, tocDepth;
+var tocXML, tocDepth;
 var help;
 
 var switchCounter = 0;
@@ -72,10 +70,6 @@ process.argv.forEach(function(arg) {
 		debug = true;
 	} else if (arg.indexOf(SWITCH_TOCXML) === 0) {
 		tocXML = true;
-	} else if (arg.indexOf(SWITCH_TOCHTML) === 0) {
-		tocHTML = true;
-	} else if (arg.indexOf(SWITCH_TOCDITA) === 0) {
-		tocDITA = true;
 	} else if (arg.indexOf(OPTION_TOC_DEPTH) === 0 && arg.indexOf("=") !== -1) {
 		tocDepth = arg.substring(arg.indexOf("=") + 1);
 	} else if (arg.indexOf(OPTION_PDFOPTIONSFILE) === 0 && arg.indexOf("=") !== -1) {
@@ -130,8 +124,6 @@ if (help || !sourceDir || !destDir) {
 		pdfOptionsFile: pdfOptionsFile,
 		extensionFiles: extensionFiles,
 		tocXML: tocXML,
-		tocHTML: tocHTML,
-		tocDITA: tocDITA,
 		tocDepth: tocDepth,
 		headerFile: headerFile,
 		footerFile: footerFile,
@@ -155,10 +147,6 @@ function outputHelpPage() {
 	console.log("\tDisable processing of Jekyll-style front matter blocks");
 	console.log(SWITCH_TOCXML);
 	console.log("\tGenerate a toc.xml file for directories containing a valid toc file");
-	console.log(SWITCH_TOCHTML);
-	console.log("\tGenerate a toc.html file for directories containing a valid toc file");
-	console.log(SWITCH_TOCDITA);
-	console.log("\tGenerate a toc.ditamap file for directories containing a valid toc file");
 	console.log(OPTION_TOC_DEPTH + "=<maxHeaderLevel>");
 	console.log("\tSet the maximum header level that will appear in toc files (default=" + DEFAULT_TOC_DEPTH + ")");
 	console.log(SWITCH_VERBOSE);

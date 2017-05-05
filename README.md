@@ -35,10 +35,6 @@ marked-it-cli <sourceDirectory> --output=<destinationDirectory> [OPTIONS]
 	Disable processing of Jekyll-style front matter blocks
 --toc-xml
 	Generate a toc.xml file for directories containing a valid toc file
---toc-html
-	Generate a toc.html file for directories containing a valid toc file
---toc-dita
-	Generate a toc.ditamap file for directories containing a valid toc file
 --toc-depth=<maxHeaderLevel>
 	Set the maximum header level that will appear in toc files (default=3)
 --verbose
