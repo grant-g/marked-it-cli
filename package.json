@@ -1,7 +1,7 @@
 {
 	"name": "marked-it-cli",
 	"description": "A CLI for marked-it.  Performs markdown->HTML and (optionally) TOC generation for a collection of markdown source files.",
-	"version": "0.8.0",
+	"version": "0.8.1",
 	"author": "Grant Gayed <grant_gayed@ca.ibm.com>",
 	"license": "MIT",
 	"homepage": "https://github.com/grant-g/marked-it-cli",
@@ -17,7 +17,7 @@
 	},
 	"files": ["bin/", "lib/", "example/"],
 	"dependencies": {
-		"marked-it": "0.0.2",
+		"marked-it-core": "*",
 		"wkhtmltopdf": "0.1.5",
 		"js-yaml": "3.5.3",
 		"htmlparser2": "3.8.3",
