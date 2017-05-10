@@ -31,6 +31,7 @@ var logger;
 
 var NOTOC = "notoc";
 var PREFIX_TOC = "toc-";
+var COMMENT_MARKDOWN_NAVIGATION = "<!-- Markdown Navigation -->";
 
 /* the following regex is sourced from marked: https://github.com/chjj/marked */
 var REGEX_LINK = /^!?\[((?:\[[^\]]*\]|[^\[\]]|\](?=[^\[]*\]))*)\]\(\s*<?([\s\S]*?)>?(?:\s+['"]([\s\S]*?)['"])?\s*\)/;
@@ -106,6 +107,10 @@ xml.toc.file.onGenerate = function(xml, data) {
 	var ATTRIBUTE_ID = "id";
 
 	var clearNavgroupAtEnd = false;
+
+	if (xml === COMMENT_MARKDOWN_NAVIGATION) {
+		return ""; /* explicitly want this to not go through into the generated TOC */
+	}
 
 	/* check for .navgroup attribute */
 	var classes = data.attributes[ATTRIBUTE_CLASS];
