@@ -2,5 +2,52 @@
 
 This project uses [semantic versioning](http://semver.org/).
 
-[0.8.0] 2017-05-07
+## [0.9.0] 2017-06-05
+### New features
+#### Improved toc file nesting
+Nesting of items in toc files can now be specified with '>' characters instead of whitespace.  This was done because the previous reliance on whitespace proved to not be reliable, as specified whitespace was not always preserved by copy/paste operations and by display in some web clients.
+
+The following is done to determine the indentation level for a line in a toc file:
+1. Capture all leading space and ‘>’ chars.
+2. If there are any ‘>’ chars in there then count the number of ‘>’ chars to determine that item’s level.  All contained spaces are consequently considered to be meaningless (useful for formatting only).
+3. If there are no ‘>’ chars in there then use the previous approach of counting the number of leading spaces.
+
+The following four hierarchies are equivalent.  They demonstrate different approaches that can be used to define toc file lines with varying hierarchy  readability.
+
+```
+root1 (spaces only)
+    child1
+            childTooDeepError
+    child2
+        child21
+            child211
+        child 22
+
+root2 ('>' only)
+>child1
+>>>childTooDeepError
+>child2
+>>child21
+>>>child211
+>>child 22
+
+root3 (all '>' at beginning, spaces are ignored but help with readability)
+>    child1
+>>>            childTooDeepError
+>    child2
+>>        child21
+>>>            child211
+>>        child 22
+
+root4 ('>' at each level, spaces are ignored but help with readability)
+>    child1
+>    >    >    childTooDeepError
+>    child2
+>    >    child21
+>    >    >    child211
+>    >    child 22
+```
+
+
+## [0.8.0] 2017-05-07
 Initial release
