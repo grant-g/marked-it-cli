@@ -2,6 +2,25 @@
 
 This project uses [semantic versioning](http://semver.org/).
 
+## [0.9.1] 2017-06-27
+### New features
+Code blocks that identify a source language are now marked up with [highlight.js](https://www.npmjs.com/package/highlight.js) so that they can
+render with syntax highlighting.  For example, markdown source:
+	```python
+	s = "Python syntax highlighting"
+	print s
+	```
+
+will generate to HTML as:
+
+	<pre>
+	<code class="lang-python hljs">
+	s = <span class="hljs-string">"Python syntax highlighting"</span>
+	<span class="hljs-keyword">print</span> s
+	</code>
+	</pre>
+
+
 ## [0.9.0] 2017-06-05
 ### New features
 #### Improved toc file nesting
