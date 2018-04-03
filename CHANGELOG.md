@@ -2,6 +2,9 @@
 
 This project uses [semantic versioning](http://semver.org/).
 
+## [0.9.2] 2018-04-03
+Update to example/xmlTocExt.js.
+
 ## [0.9.1] 2017-06-27
 ### New features
 Code blocks that identify a source language are now marked up with [highlight.js](https://www.npmjs.com/package/highlight.js) so that they can

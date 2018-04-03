@@ -119,6 +119,7 @@ xml.toc.file.onGenerate = function(xml, data) {
 		for (var i = 0; i < classes.length; i++) {
 			var className = classes[i].toLowerCase();
 			if (className === CLASS_NAVGROUP) {
+				classes.splice(i--, 1);
 				if (navgroup) {
 					logger.warning("Encountered new .navgroup before previous .navgroup '" + navgroup.id + "' was ended");
 				} else {
@@ -127,15 +128,18 @@ xml.toc.file.onGenerate = function(xml, data) {
 						logger.warning("Encountered .navgroup without an 'id' attribute, on toc item: " + data.source);
 					} else {
 						navgroup = {id: id, level: data.level};
-					}					
+						delete data.attributes[ATTRIBUTE_ID];
+					}
 				}
 			} else if (className === CLASS_NAVGROUP_END) {
+				classes.splice(i--, 1);
 				if (!navgroup) {
 					logger.warning("Encountered .navgroup-end while not in a previous .navgroup, on toc item: " + data.source);
 				}
 				clearNavgroupAtEnd = true;
 			}
 		}
+		data.attributes[ATTRIBUTE_CLASS] = classes.join(" ");
 	}
 
 	if (navgroup && data.level < navgroup.level) {
@@ -164,6 +168,20 @@ xml.toc.file.onGenerate = function(xml, data) {
 						}
 					}
 				});
+
+				var keys = Object.keys(data.attributes);
+				if (keys) {
+					keys.forEach(function(key) {
+						var propertyElement = data.htmlToDom('<property name="' + key + '" value="' + data.attributes[key] + '" />\n', {xmlMode: true})[0];
+						var elementChildren = data.domUtils.getChildren(docRoot);
+						if (elementChildren.length) {
+							data.domUtils.prepend(elementChildren[0], propertyElement);
+						} else {
+							data.domUtils.appendChild(docRoot, propertyElement);
+						}
+					});
+				}
+
 				if (navgroup && data.level === navgroup.level) {
 					var navgroupElement = data.htmlToDom('<property name="navgroup" value="' + navgroup.id + '" />', {xmlMode: true})[0];
 					var elementChildren = data.domUtils.getChildren(docRoot);
