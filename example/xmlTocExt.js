@@ -22,7 +22,7 @@
 var FILENAME_HEADER = "header-xml";
 var FILENAME_FOOTER = null;
 
-var fs = require("fs");
+var fse = require("fse");
 var path = require("path");
 var url = require("url");
 
@@ -247,26 +247,26 @@ var init = function(data) {
 	if (FILENAME_HEADER) {
 		var headerPath = path.join(__dirname, FILENAME_HEADER);
 		try {
-			var fd = fs.openSync(headerPath, "r");
+			var fd = fse.openSync(headerPath, "r");
 		} catch (e) {
 			logger.error("Failed to open XML header file: " + headerPath + "\n" + e.toString());
 		}
 		if (fd) {
 			headerText = data.readFile(fd);
-			fs.closeSync(fd);
+			fse.closeSync(fd);
 		}
 	}
 
 	if (FILENAME_FOOTER) {
 		var footerPath = path.join(__dirname, FILENAME_FOOTER);
 		try {
-			var fd = fs.openSync(footerPath, "r");
+			var fd = fse.openSync(footerPath, "r");
 		} catch (e) {
 			logger.error("Failed to open XML footer file: " + footerPath + "\n" + e.toString());
 		}
 		if (fd) {
 			footerText = data.readFile(fd);
-			fs.closeSync(fd);
+			fse.closeSync(fd);
 		}
 	}
 };
@@ -286,11 +286,8 @@ toc.file.parse = function(content, data) {
 
 	var tocFileLines = data.split("\n");
 
-//	var rootElement = common.htmlToDom("<root></root>", {xmlMode: xmlMode})[0];
-	var rootElement = {};
-
+	var rootElement = {level: 0, children: []};
 	var lastTocItem = rootElement;
-	lastTocItem.level = 0;
 
 	for (var i = 0; i < tocFileLines.length; i++) {
 		var tocItem = tocFileLines[i].replace(/\t/g, FOURSPACES);
@@ -324,7 +321,7 @@ toc.file.parse = function(content, data) {
 		var level = (gtCount || Math.floor(indentChars[0].length / FOURSPACES.length)) + 1;
 		if (level - lastTocItem.level > 1) {
 			eligibleAttributes = [];
-			logger.warning("Excluded from toc files due to invalid nesting level: " + tocOrderPath + "#" + tocItem);
+			logger.warning("Excluded from toc files due to invalid nesting level: " + data.filename + "#" + tocItem);
 			continue;
 		}
 
@@ -337,48 +334,72 @@ toc.file.parse = function(content, data) {
 			i = j;		/* consuming this next line now */
 		}
 
-//						var newTopics = null;
-//
-//						// TODO this has moved out to an extension, remove it from here next time breaking changes are permitted
-//						var match = REGEX_LINK.exec(tocItem);
-//						if (match) {
-//							/* is a link to external content */
-//							newTopics = common.htmlToDom(adapter.createTopic(match[2], match[1]), {xmlMode: xmlMode})[0];
-//						}
-//
-//						/* try to locate a corresponding folder or file */
-//						var entryFile = path.join(destination, tocItem);
-//						var exception = null;
-//						if (fse.existsSync(entryFile) && fse.statSync(entryFile).isDirectory()) {
-//							/* create toc links to corresponding TOC files */
-//							// TODO don't think this is valid for all TOC types, should be in the adapters
-//							newTopics = common.htmlToDom('<link toc="' + path.join(tocItem, tocFilename).replace(/[\\]/g, "/") + '"></link>\n', {xmlMode: xmlMode})[0];
-//						} else {
-//							var dirname = path.dirname(tocItem);
-//							var entryDestPath = path.join(destination, dirname);
-//							var entryTOCinfoPath = path.join(entryDestPath, FILENAME_TEMP);
-//							var basename = path.basename(tocItem);
-//							var tocInfoFile = path.join(entryTOCinfoPath, basename.replace(EXTENSION_MARKDOWN_REGEX, "." + tocFilename));
-//							try {
-//								var readFd = fse.openSync(tocInfoFile, "r");
-//								var result = common.readFile(readFd);
-//								fse.closeSync(readFd);
-//
-//								/* adjust contained relative links */
-//								var root = common.htmlToDom(result, {xmlMode: xmlMode})[0];
-//								var elementsWithHref = common.domUtils.find(function(node) {return node.attribs && node.attribs.href;}, [root], true, Infinity);
-//								elementsWithHref.forEach(function(current) {
-//									current.attribs.href = path.join(dirname, current.attribs.href).replace(/[\\]/g, "/");
-//								});
-//								var children = common.domUtils.getChildren(root);
-//								if (children.length) {
-//									newTopics = children[0];
-//								}
-//							} catch (e) {
-//								/* this could be valid if the toc entry is not intended to correspond to a folder or file, so don't say anything yet */
-//								exception = e;
-//							}
-//						}
+		var newItem = {level: level, children: []};
+		newItem.topic = tocItem;
+		newItem.attributes = computeAttributes(eligibleAttributes, attributeDefinitionLists);
+
+		/* calculate the parent element */
+		while (level - 1 < lastTocItem.level) {
+			lastTocItem = lastTocItem.parent;
+		}
+		newItem.parent = lastTocItem;
+		lastTocItem.children.push(newItem);
+
+		lastTocItem = newItem;
+		eligibleAttributes = [];
+	}
+	
+	return rootElement.children;
+};
+
+toc.file.output = function(object, data) {
+	/* XML output */
+	var destination = data.destination;
+
+	object.forEach(function(current) {
+		var newTopics = null;
+		var tocItem = current.topic;
+// TODO get adapter
+		// TODO this has moved out to an extension, remove it from here next time breaking changes are permitted
+		var match = REGEX_LINK.exec(tocItem);
+		if (match) {
+			/* is a link to external content */
+			newTopics = data.htmlToDom(adapter.createTopic(match[2], match[1]), {xmlMode: true})[0];
+		}
+
+		/* try to locate a corresponding folder or file */
+		var entryFile = path.join(destination, tocItem);
+		var exception = null;
+		if (fse.existsSync(entryFile) && fse.statSync(entryFile).isDirectory()) {
+			/* create toc links to corresponding TOC files */
+			// TODO don't think this is valid for all TOC types, should be in the adapters
+			newTopics = common.htmlToDom('<link toc="' + path.join(tocItem, tocFilename).replace(/[\\]/g, "/") + '"></link>\n', {xmlMode: xmlMode})[0];
+		} else {
+			var dirname = path.dirname(tocItem);
+			var entryDestPath = path.join(destination, dirname);
+			var entryTOCinfoPath = path.join(entryDestPath, FILENAME_TEMP);
+			var basename = path.basename(tocItem);
+			var tocInfoFile = path.join(entryTOCinfoPath, basename.replace(EXTENSION_MARKDOWN_REGEX, "." + tocFilename));
+			try {
+				var readFd = fse.openSync(tocInfoFile, "r");
+				var result = common.readFile(readFd);
+				fse.closeSync(readFd);
+
+				/* adjust contained relative links */
+				var root = common.htmlToDom(result, {xmlMode: xmlMode})[0];
+				var elementsWithHref = common.domUtils.find(function(node) {return node.attribs && node.attribs.href;}, [root], true, Infinity);
+				elementsWithHref.forEach(function(current) {
+					current.attribs.href = path.join(dirname, current.attribs.href).replace(/[\\]/g, "/");
+				});
+				var children = common.domUtils.getChildren(root);
+				if (children.length) {
+					newTopics = children[0];
+				}
+			} catch (e) {
+				/* this could be valid if the toc entry is not intended to correspond to a folder or file, so don't say anything yet */
+				exception = e;
+			}
+		}
 //
 //						var topicsString = "";
 //						var currentTopic = newTopics;
@@ -432,10 +453,82 @@ toc.file.parse = function(content, data) {
 //					}
 //					
 //					return common.domToInnerHtml(rootElement, {xmlMode: true});
+//};
 
-};
+// TODO this function is copied from htmlGenerator, should share it if possible
+function computeAttributes(inlineAttributes, attributeDefinitionLists) {
+	var keys;
+	var result = {};
+	var idRegex = /^#([\S]+)/;
+	var classRegex = /^\.(-?[_a-zA-Z]+[_a-zA-Z0-9-]*)/;
+	var attributeRegex = /^([^\/>"'=]+)=(['"])([^\2]+)\2/;
+	var segmentRegex = /([^ \t'"]|((['"])(.(?!\3))*.\3))+/g;
 
-	
+	var inheritedAttributes = {}; /* from ADLs */
+	var localAttributes = {}; /* from IALs */
+
+	inlineAttributes.forEach(function(current) {
+		var segmentMatch = segmentRegex.exec(current);
+		while (segmentMatch) {
+			segmentMatch = segmentMatch[0].trim();
+			if (segmentMatch.length) {
+				var match = idRegex.exec(segmentMatch);
+				if (match) {
+					localAttributes.id = match[1];
+				} else {
+					match = classRegex.exec(segmentMatch);
+					if (match) {
+						var classes = localAttributes["class"] || "";
+						classes += (classes ? " " : "") + match[1];
+						localAttributes["class"] = classes;
+					} else {
+						match = attributeRegex.exec(segmentMatch);
+						if (match) {
+							localAttributes[match[1]] = match[3];
+						} else {
+							if (attributeDefinitionLists[segmentMatch]) {
+								var attributes = computeAttributes([attributeDefinitionLists[segmentMatch]], attributeDefinitionLists);
+								keys = Object.keys(attributes);
+								keys.forEach(function(key) {
+									if (key === "class" && inheritedAttributes[key]) {
+										/* merge conflicting class values rather than overwriting */
+										inheritedAttributes[key] += " " + attributes[key];
+									} else {
+										inheritedAttributes[key] = attributes[key];
+									}
+								});
+							} else {
+								/* an attribute without a value */
+								localAttributes[segmentMatch] = null;
+							}
+						}
+					}
+				}
+			}
+			segmentMatch = segmentRegex.exec(current);
+		}
+	});
+
+	/* add inherited attributes first so that locally-defined attributes will overwrite inherited ones when a name conflict occurs */
+
+	keys = Object.keys(inheritedAttributes);
+	keys.forEach(function(key) {
+		result[key] = inheritedAttributes[key];
+	});
+
+	keys = Object.keys(localAttributes);
+	keys.forEach(function(key) {
+		if (key === "class") {
+			/* merge conflicting class values rather than overwriting */
+			result[key] = (result[key] || "") + (result[key] ? " " : "")  + localAttributes[key];
+		} else {
+			result[key] = localAttributes[key];
+		}
+	});
+
+	return result;
+}
+
 module.exports.html = html;
 module.exports.xml = xml;
 module.exports.init = init;
