@@ -2,6 +2,9 @@
 
 This project uses [semantic versioning](http://semver.org/).
 
+## [0.9.4] 2018-04-18
+Fix to eliminate generation of `<property name="class" value=""/>` elements in toc.xml files.
+
 ## [0.9.2] 2018-04-03
 Update to example/xmlTocExt.js.
 
