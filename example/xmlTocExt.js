@@ -139,7 +139,11 @@ xml.toc.file.onGenerate = function(xml, data) {
 				clearNavgroupAtEnd = true;
 			}
 		}
-		data.attributes[ATTRIBUTE_CLASS] = classes.join(" ");
+		if (!classes.length) {
+			delete data.attributes[ATTRIBUTE_CLASS];
+		} else {
+			data.attributes[ATTRIBUTE_CLASS] = classes.join(" ");
+		}
 	}
 
 	if (navgroup && data.level < navgroup.level) {
