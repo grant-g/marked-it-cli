@@ -111,10 +111,6 @@ xml.toc.file.onGenerate = function(xml, data) {
 
 	var clearNavgroupAtEnd = false;
 
-	if (xml === COMMENT_MARKDOWN_NAVIGATION) {
-		return ""; /* explicitly want this to not go through into the generated TOC */
-	}
-
 	/* check for .navgroup attribute */
 	var classes = data.attributes[ATTRIBUTE_CLASS];
 	if (classes) {
@@ -142,7 +138,11 @@ xml.toc.file.onGenerate = function(xml, data) {
 				clearNavgroupAtEnd = true;
 			}
 		}
-		data.attributes[ATTRIBUTE_CLASS] = classes.join(" ");
+		if (classes.length) {
+			data.attributes[ATTRIBUTE_CLASS] = classes.join(" ");
+		} else {
+			delete data.attributes[ATTRIBUTE_CLASS];
+		}
 	}
 
 	if (navgroup && data.level < navgroup.level) {
@@ -295,7 +295,7 @@ toc.file.parse = function(content, data) {
 		var tocItem = tocFileLines[i].replace(/\t/g, FOURSPACES);
 		var indentChars = /^[ >]*/.exec(tocItem);
 		tocItem = tocItem.trim();
-		if (!tocItem.length) {
+		if (!tocItem.length || tocItem === COMMENT_MARKDOWN_NAVIGATION) {
 			eligibleAttributes = [];
 			continue; /* blank line */
 		}
@@ -356,13 +356,16 @@ toc.file.parse = function(content, data) {
 
 toc.file.output = function(modelRoot, data) {
 	/* XML output */
-	var destination = data.destinationPath;
 	var lastTocItem = modelRoot.dom = data.htmlToDom("<root></root>", {xmlMode: true})[0];
 	lastTocItem.level = 0;
+	generateToc(modelRoot, lastTocItem, data);
+	return data.domToInnerHtml(modelRoot.dom, {xmlMode: true});
+};
 
-	for (var i = 0; i < modelRoot.children.length; i++) {
+function generateToc(modelRoot, lastTocItem, data) {
+	var destination = data.destinationPath;
+	modelRoot.children.forEach(function(current) {
 		var newTopics = null;
-		var current = modelRoot.children[i];
 		var tocItem = current.topic;
 
 		// TODO this has moved out to an extension, remove it from here next time breaking changes are permitted
@@ -453,10 +456,10 @@ toc.file.output = function(modelRoot, data) {
 				logger.warning(warningString);
 			}
 		}
-	}
-
-	return data.domToInnerHtml(modelRoot.dom, {xmlMode: true});
-};
+		
+		generateToc(current, lastTocItem, data);
+	});
+}
 
 // TODO this function is copied from htmlGenerator, should share it if possible
 function computeAttributes(inlineAttributes, attributeDefinitionLists) {
