@@ -22,7 +22,7 @@
 var FILENAME_HEADER = "header-xml";
 var FILENAME_FOOTER = null;
 
-var fse = require("fse");
+var fs = require("fs");
 var path = require("path");
 var url = require("url");
 
@@ -32,6 +32,8 @@ var logger;
 var NOTOC = "notoc";
 var PREFIX_TOC = "toc-";
 var COMMENT_MARKDOWN_NAVIGATION = "<!-- Markdown Navigation -->";
+var FILENAME_TEMP = ".markeditcli-temp";
+var EXTENSION_MARKDOWN_REGEX = /\.md$/gi;
 
 /* the following regex is sourced from marked: https://github.com/chjj/marked */
 var REGEX_LINK = /^!?\[((?:\[[^\]]*\]|[^\[\]]|\](?=[^\[]*\]))*)\]\(\s*<?([\s\S]*?)>?(?:\s+['"]([\s\S]*?)['"])?\s*\)/;
@@ -247,33 +249,33 @@ var init = function(data) {
 	if (FILENAME_HEADER) {
 		var headerPath = path.join(__dirname, FILENAME_HEADER);
 		try {
-			var fd = fse.openSync(headerPath, "r");
+			var fd = fs.openSync(headerPath, "r");
 		} catch (e) {
 			logger.error("Failed to open XML header file: " + headerPath + "\n" + e.toString());
 		}
 		if (fd) {
 			headerText = data.readFile(fd);
-			fse.closeSync(fd);
+			fs.closeSync(fd);
 		}
 	}
 
 	if (FILENAME_FOOTER) {
 		var footerPath = path.join(__dirname, FILENAME_FOOTER);
 		try {
-			var fd = fse.openSync(footerPath, "r");
+			var fd = fs.openSync(footerPath, "r");
 		} catch (e) {
 			logger.error("Failed to open XML footer file: " + footerPath + "\n" + e.toString());
 		}
 		if (fd) {
 			footerText = data.readFile(fd);
-			fse.closeSync(fd);
+			fs.closeSync(fd);
 		}
 	}
 };
 
 /* handles the current text-based toc format */
 toc.file.parse = function(content, data) {
-	if (!/toc(\.txt)?$/.test(data.filename)) {
+	if (!/toc(\.txt)?$/.test(data.sourcePath)) {
 		return;
 	}
 
@@ -284,7 +286,7 @@ toc.file.parse = function(content, data) {
 	var eligibleAttributes = [];
 	var FOURSPACES = "    ";
 
-	var tocFileLines = data.split("\n");
+	var tocFileLines = content.split("\n");
 
 	var rootElement = {level: 0, children: []};
 	var lastTocItem = rootElement;
@@ -321,7 +323,7 @@ toc.file.parse = function(content, data) {
 		var level = (gtCount || Math.floor(indentChars[0].length / FOURSPACES.length)) + 1;
 		if (level - lastTocItem.level > 1) {
 			eligibleAttributes = [];
-			logger.warning("Excluded from toc files due to invalid nesting level: " + data.filename + "#" + tocItem);
+			logger.warning("Excluded from toc files due to invalid nesting level: " + data.sourcePath + "#" + tocItem);
 			continue;
 		}
 
@@ -349,31 +351,34 @@ toc.file.parse = function(content, data) {
 		eligibleAttributes = [];
 	}
 	
-	return rootElement.children;
+	return rootElement;
 };
 
-toc.file.output = function(object, data) {
+toc.file.output = function(modelRoot, data) {
 	/* XML output */
-	var destination = data.destination;
+	var destination = data.destinationPath;
+	var lastTocItem = modelRoot.dom = data.htmlToDom("<root></root>", {xmlMode: true})[0];
+	lastTocItem.level = 0;
 
-	object.forEach(function(current) {
+	for (var i = 0; i < modelRoot.children.length; i++) {
 		var newTopics = null;
+		var current = modelRoot.children[i];
 		var tocItem = current.topic;
-// TODO get adapter
+
 		// TODO this has moved out to an extension, remove it from here next time breaking changes are permitted
 		var match = REGEX_LINK.exec(tocItem);
 		if (match) {
 			/* is a link to external content */
-			newTopics = data.htmlToDom(adapter.createTopic(match[2], match[1]), {xmlMode: true})[0];
+			newTopics = data.htmlToDom(data.adapter.createTopic(match[2], match[1]), {xmlMode: true})[0];
 		}
 
 		/* try to locate a corresponding folder or file */
 		var entryFile = path.join(destination, tocItem);
 		var exception = null;
-		if (fse.existsSync(entryFile) && fse.statSync(entryFile).isDirectory()) {
+		var tocFilename = "toc.xml"; 
+		if (fs.existsSync(entryFile) && fs.statSync(entryFile).isDirectory()) {
 			/* create toc links to corresponding TOC files */
-			// TODO don't think this is valid for all TOC types, should be in the adapters
-			newTopics = common.htmlToDom('<link toc="' + path.join(tocItem, tocFilename).replace(/[\\]/g, "/") + '"></link>\n', {xmlMode: xmlMode})[0];
+			newTopics = data.htmlToDom('<link toc="' + path.join(tocItem, tocFilename).replace(/[\\]/g, "/") + '"></link>\n', {xmlMode: true})[0];
 		} else {
 			var dirname = path.dirname(tocItem);
 			var entryDestPath = path.join(destination, dirname);
@@ -381,17 +386,17 @@ toc.file.output = function(object, data) {
 			var basename = path.basename(tocItem);
 			var tocInfoFile = path.join(entryTOCinfoPath, basename.replace(EXTENSION_MARKDOWN_REGEX, "." + tocFilename));
 			try {
-				var readFd = fse.openSync(tocInfoFile, "r");
-				var result = common.readFile(readFd);
-				fse.closeSync(readFd);
+				var readFd = fs.openSync(tocInfoFile, "r");
+				var result = data.readFile(readFd);
+				fs.closeSync(readFd);
 
 				/* adjust contained relative links */
-				var root = common.htmlToDom(result, {xmlMode: xmlMode})[0];
-				var elementsWithHref = common.domUtils.find(function(node) {return node.attribs && node.attribs.href;}, [root], true, Infinity);
+				var root = data.htmlToDom(result, {xmlMode: true})[0];
+				var elementsWithHref = data.domUtils.find(function(node) {return node.attribs && node.attribs.href;}, [root], true, Infinity);
 				elementsWithHref.forEach(function(current) {
 					current.attribs.href = path.join(dirname, current.attribs.href).replace(/[\\]/g, "/");
 				});
-				var children = common.domUtils.getChildren(root);
+				var children = data.domUtils.getChildren(root);
 				if (children.length) {
 					newTopics = children[0];
 				}
@@ -400,60 +405,58 @@ toc.file.output = function(object, data) {
 				exception = e;
 			}
 		}
-//
-//						var topicsString = "";
-//						var currentTopic = newTopics;
-//						while (currentTopic) {
-//							topicsString += common.domToHtml(currentTopic, {xmlMode: true}) + "\n";
-//							currentTopic = currentTopic.next;
-//						}
-//
-//						var newTopicsString = common.invokeExtensions(
-//							extensions,
-//							"xml.toc.file.onGenerate",
-//							topicsString || tocItem,
-//							{
-//								source: tocItem,
-//								level: level,
-//								attributes: computeAttributes(eligibleAttributes, attributeDefinitionLists),
-//								htmlToDom: common.htmlToDom,
-//								domToHtml: common.domToHtml,
-//								domToInnerHtml: common.domToInnerHtml,
-//								domUtils: common.domUtils
-//							});
-//						if (topicsString !== newTopicsString) {
-//							newTopics = common.htmlToDom(newTopicsString, {xmlMode: true})[0];
-//						}
-//
-//						if (newTopics) {
-//							/* determine the correct parent element */
-//							while (level - 1 < lastTocItem.level) {
-//								lastTocItem = common.domUtils.getParent(lastTocItem);
-//							}
-//
-//							/* append the topic children */
-//							currentTopic = newTopics;
-//							while (currentTopic) {
-//								currentTopic.level = level;
-//								common.domUtils.appendChild(lastTocItem, currentTopic);
-//								lastTocItem = currentTopic;
-//								currentTopic = currentTopic.next;
-//							}
-//						} else {
-//							if (newTopicsString !== "") {
-//								var warningString = "Excluded from toc files: " + tocOrderPath + "#" + tocItem;
-//								if (exception) {
-//									warningString += ".  Possibly relevant, file exception when attempting to access it as a file: " + exception.toString();
-//								}
-//								logger.warning(warningString);
-//							}
-//						}
-//
-//						eligibleAttributes = [];
-//					}
-//					
-//					return common.domToInnerHtml(rootElement, {xmlMode: true});
-//};
+
+		var topicsString = "";
+		var currentTopic = newTopics;
+		while (currentTopic) {
+			topicsString += data.domToHtml(currentTopic, {xmlMode: true}) + "\n";
+			currentTopic = currentTopic.next;
+		}
+
+		var newTopicsString = data.invokeExtensions(
+			data.extensions,
+			"xml.toc.file.onGenerate",
+			topicsString || tocItem,
+			{
+				source: tocItem,
+				level: current.level,
+				attributes: current.attributes,
+				htmlToDom: data.htmlToDom,
+				domToHtml: data.domToHtml,
+				domToInnerHtml: data.domToInnerHtml,
+				domUtils: data.domUtils
+			});
+		if (topicsString !== newTopicsString) {
+			newTopics = data.htmlToDom(newTopicsString, {xmlMode: true})[0];
+		}
+
+		if (newTopics) {
+			/* determine the correct parent element */
+			while (current.level - 1 < lastTocItem.level) {
+				lastTocItem = data.domUtils.getParent(lastTocItem);
+			}
+
+			/* append the topic children */
+			currentTopic = newTopics;
+			while (currentTopic) {
+				currentTopic.level = current.level;
+				data.domUtils.appendChild(lastTocItem, currentTopic);
+				lastTocItem = currentTopic;
+				currentTopic = currentTopic.next;
+			}
+		} else {
+			if (newTopicsString !== "") {
+				var warningString = "Excluded from toc files: " + data.sourcePath + "#" + tocItem;
+				if (exception) {
+					warningString += ".  Possibly relevant, file exception when attempting to access it as a file: " + exception.toString();
+				}
+				logger.warning(warningString);
+			}
+		}
+	}
+
+	return data.domToInnerHtml(modelRoot.dom, {xmlMode: true});
+};
 
 // TODO this function is copied from htmlGenerator, should share it if possible
 function computeAttributes(inlineAttributes, attributeDefinitionLists) {
@@ -531,5 +534,6 @@ function computeAttributes(inlineAttributes, attributeDefinitionLists) {
 
 module.exports.html = html;
 module.exports.xml = xml;
+module.exports.toc = toc;
 module.exports.init = init;
 module.exports.id = "xmlTOC";
