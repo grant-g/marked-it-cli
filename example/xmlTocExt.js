@@ -24,7 +24,6 @@ var FILENAME_FOOTER = null;
 
 var fs = require("fs");
 var path = require("path");
-var url = require("url");
 
 var headerText, footerText;
 var logger;
@@ -38,11 +37,8 @@ var EXTENSION_MARKDOWN_REGEX = /\.md$/gi;
 /* the following regex is sourced from marked: https://github.com/chjj/marked */
 var REGEX_LINK = /^!?\[((?:\[[^\]]*\]|[^\[\]]|\](?=[^\[]*\]))*)\]\(\s*<?([\s\S]*?)>?(?:\s+['"]([\s\S]*?)['"])?\s*\)/;
 
-var html = {};
-var xml = {toc: {file: {}}};
-var toc = {file: {}};
-
-html.onHeading = function(html, data) {
+/* html.onHeading */
+function onHeading(html, data) {
 	var heading = data.htmlToDom(html)[0];
 	var changed = false;
 	Object.keys(heading.attribs).forEach(function(key) {
@@ -55,9 +51,10 @@ html.onHeading = function(html, data) {
 		return; /* nothing to do */
 	}
 	return data.domToHtml(heading);
-};
+}
 
-xml.toc.onTopic = function(topic, data) {
+/* xml.toc.onTopic */
+function onTopic(topic, data) {
 	var heading = data.htmlToDom(data.heading)[0];
 	var attributes = heading.attribs;
 	if (attributes[NOTOC]) {
@@ -80,9 +77,10 @@ xml.toc.onTopic = function(topic, data) {
 	}
 
 	return data.domToHtml(topicDom, {xmlMode: true});
-};
+}
 
-xml.toc.onComplete = function(xml, data) {
+/* xml.toc.onComplete */
+function onComplete(xml, data) {
 	if (!headerText && !footerText) {
 		return; /* no change */
 	}
@@ -97,11 +95,12 @@ xml.toc.onComplete = function(xml, data) {
 	}
 
 	return result;
-};
+}
 
+
+/* xml.toc.file.onGenerate */
 var navgroup;
-
-xml.toc.file.onGenerate = function(xml, data) {
+function onGenerate(xml, data) {
 	var CLASS_TOC = "toc";
 	var CLASS_NAVGROUP = "navgroup";
 	var CLASS_NAVGROUP_END = "navgroup-end";
@@ -242,9 +241,9 @@ xml.toc.file.onGenerate = function(xml, data) {
 
 	navgroup = clearNavgroupAtEnd ? null : navgroup;
 	return element ? data.domToHtml(element, {xmlMode: true}) : null;
-};
+}
 
-var init = function(data) {
+var init = function(extensionManager, data) {
 	logger = data.logger;
 	if (FILENAME_HEADER) {
 		var headerPath = path.join(__dirname, FILENAME_HEADER);
@@ -271,10 +270,19 @@ var init = function(data) {
 			fs.closeSync(fd);
 		}
 	}
+	
+	extensionManager.setId("xmlTOC");
+	extensionManager.registerExtension("html.onHeading", onHeading);
+	extensionManager.registerExtension("xml.toc.onTopic", onTopic);
+	extensionManager.registerExtension("xml.toc.onComplete", onComplete);
+	extensionManager.registerExtension("xml.toc.file.onGenerate", onGenerate);
+	extensionManager.registerExtension("toc.file.parse", parseTextToc);
+	extensionManager.registerExtension("toc.file.parse", parseYamlToc);
+	extensionManager.registerExtension("toc.file.output", output);
 };
 
-/* handles the current text-based toc format */
-toc.file.parse = function(content, data) {
+/* toc.file.parse */
+function parseTextToc(content, data) {
 	if (!/toc(\.txt)?$/.test(data.sourcePath)) {
 		return;
 	}
@@ -352,15 +360,25 @@ toc.file.parse = function(content, data) {
 	}
 	
 	return rootElement;
-};
+}
 
-toc.file.output = function(modelRoot, data) {
+/* toc.file.parse */
+function parseYamlToc(content, data) {
+	if (!/toc.ya?ml$/.test(data.sourcePath)) {
+		return;
+	}
+
+	// TODO
+}
+
+/* toc.file.output */
+function output(modelRoot, data) {
 	/* XML output */
 	var lastTocItem = modelRoot.dom = data.htmlToDom("<root></root>", {xmlMode: true})[0];
 	lastTocItem.level = 0;
 	generateToc(modelRoot, lastTocItem, data);
 	return data.domToInnerHtml(modelRoot.dom, {xmlMode: true});
-};
+}
 
 function generateToc(modelRoot, lastTocItem, data) {
 	var destination = data.destinationPath;
@@ -535,8 +553,4 @@ function computeAttributes(inlineAttributes, attributeDefinitionLists) {
 	return result;
 }
 
-module.exports.html = html;
-module.exports.xml = xml;
-module.exports.toc = toc;
 module.exports.init = init;
-module.exports.id = "xmlTOC";
