@@ -2,6 +2,9 @@
 
 This project uses [semantic versioning](http://semver.org/).
 
+## [0.9.5] 2018-05-10
+Fix to skip processing of hidden folders/files.
+
 ## [0.9.4] 2018-04-18
 Fix to eliminate generation of `<property name="class" value=""/>` elements in toc.xml files.
 
