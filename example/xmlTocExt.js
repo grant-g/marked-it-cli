@@ -24,6 +24,7 @@ var FILENAME_FOOTER = null;
 
 var fs = require("fs");
 var path = require("path");
+var jsYaml = require("js-yaml");
 
 var headerText, footerText;
 var logger;
@@ -368,8 +369,56 @@ function parseYamlToc(content, data) {
 		return;
 	}
 
-	// TODO
+	var yaml;
+	try {
+		yaml = jsYaml.safeLoad(content);
+	} catch (e) {
+		logger.warning("Failed to parse " + data.sourcePath + "\n" + e.toString());
+		return;
+	}
+	
+	console.log(yaml);
+	var toc = yaml.toc;
+	if (!toc) {
+		logger.warning("No root-level toc declaration in " + data.sourcePath);
+		return;
+	}
+	if (!toc.name) {
+		logger.warning("Root-level toc declaration is missing its name: " + data.sourcePath);
+		return;		
+	}
+
+	var attributes = {};
+	Object.keys(toc).forEach(function(current) {
+		if (current !== "name" && current !== "navgroups") {
+			attributes[current] = toc[current];
+		}
+	});
+
+	var rootElement = {level: 0, children: []};
+	var currentElement = {level: 1, children: [], parent: rootElement, topic: toc.name, attributes: attributes};
+	rootElement.children.push(currentElement);
+	
+	var currentNavgroup;
+	function generateItem(asdf) {
+	}
+	Object.keys(toc.navgroups).forEach(function(navgroupId) {
+		currentNavgroup = navgroupId;
+		var children = toc.navgroups[navgroupId];
+		for (var i = 0; i < children.length; i++) {
+			if (children[i] === "topicgroup") {
+				// TODO do something
+			} else {
+				var newElement = {level: currentElement.level + 1, children: [], parent: currentElement, topic: children[i]};
+				currentElement.children.push(newElement);
+				// TODO attributes? possible?
+			}
+		}
+	});
+	
+	return rootElement;
 }
+
 
 /* toc.file.output */
 function output(modelRoot, data) {
