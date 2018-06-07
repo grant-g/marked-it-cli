@@ -140,7 +140,7 @@ html.onComplete = (html, data) => {
     }
     sections[sections.length - 1].dom.push(node);
   });
-
+  if (!sections[0].dom.length) sections.shift();
   sections.forEach((section) => { processSection(section); });
   localMap.swagger.info['x-documentation-sections'] = sections;
   const outData = JSON.stringify(localMap.swagger, null, 2);
