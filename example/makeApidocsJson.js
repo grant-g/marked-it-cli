@@ -65,7 +65,7 @@ function processSubsection(subsection, defaultLanguages, allLanguages) {
       node.attribs['data-hd-programlang'] = lang.join(' ');
     }
     const isCode = node.type === 'tag' && node.name === 'pre' && node.children && node.children.length > 0 && node.children[0].type === 'tag' && node.children[0].name === 'code';
-    const type = isCode ? 'code' : 'text';
+    const type = isCode && subsection.position === 'right' ? 'code' : 'text';
     subsection.elements.push({type, source: [domToHtml(node)]});
   });
 }
