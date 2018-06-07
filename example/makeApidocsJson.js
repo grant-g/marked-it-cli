@@ -66,7 +66,7 @@ function processSubsection(subsection, defaultLanguages, allLanguages) {
     }
     const isCode = node.type === 'tag' && node.name === 'pre' && node.children && node.children.length > 0 && node.children[0].type === 'tag' && node.children[0].name === 'code';
     const type = isCode ? 'code' : 'text';
-    subsection.elements.push({type, source: domToHtml(node)});
+    subsection.elements.push({type, source: [domToHtml(node)]});
   });
 }
 
@@ -129,7 +129,7 @@ html.onComplete = (html, data) => {
   }
   const newHtml = data.replaceVariables(html, null, localMap);
   const dom = common.htmlToDom(newHtml);
-  const sections = [{ dom: [] }];
+  const sections = [{ name: '', dom: [] }];
   dom.forEach((node) => {
     if (node.type === 'tag' && node.name === 'h1') {
       sections.push({
