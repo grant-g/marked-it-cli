@@ -38,6 +38,7 @@ function domToHtml(node) {
   const newNode = Object.assign({}, node);
   newNode.attribs = Object.assign({}, node.attribs);
   delete newNode.attribs['data-hd-position'];
+  delete newNode.attribs['data-hd-vposition'];
   delete newNode.attribs['id'];
   return common.domToHtml(newNode);
 }
@@ -53,6 +54,9 @@ function processSubsection(subsection, defaultLanguages, allLanguages) {
     if ('data-hd-position' in dom[0].attribs) {
       subsection.position = dom[0].attribs['data-hd-position'];
     }
+    if ('data-hd-vposition' in dom[0].attribs) {
+      subsection.vposition = dom[0].attribs['data-hd-vposition'];
+    }
     dom = dom.slice(1);
   }
   lang.forEach((e) => { allLanguages.add(e); });
@@ -66,7 +70,14 @@ function processSubsection(subsection, defaultLanguages, allLanguages) {
     }
     const isCode = node.type === 'tag' && node.name === 'pre' && node.children && node.children.length > 0 && node.children[0].type === 'tag' && node.children[0].name === 'code';
     const type = isCode && subsection.position === 'right' ? 'code' : 'text';
-    subsection.elements.push({type, source: [domToHtml(node)]});
+    const element = {type};
+    if (type === 'code') {
+      element.source = node.children[0].children.map(e => domToHtml(e));
+      if (lang[0] !== 'generic') element.lang = lang.join(' ') || undefined;
+    } else {
+      element.source = [domToHtml(node)];
+    }
+    subsection.elements.push(element);
   });
 }
 
@@ -82,7 +93,6 @@ function processSection(section) {
     dom = dom.slice(1);
   }
   lang.forEach((e) => { allLanguages.add(e); });
-  let pos = 'middle';
 
   const subsections = [{ dom: [] }];
   dom.forEach((node) => {
@@ -94,22 +104,37 @@ function processSection(section) {
     subsections[subsections.length - 1].dom.push(node);
   });
 
-  section.blocks = [];
-  let block = { content: [], examples: [] };
+  section.blocks = [{content: [], examples: []}];
   subsections.forEach((subsection) => {
     processSubsection(subsection, lang, allLanguages);
-    const newPos = (subsection.position === 'right' ? 'right' : 'middle');
-    if (newPos !== 'right' && pos === 'right') {
+  });
+  subsections.forEach((subsection) => {
+    if (subsection.position === 'right' && subsection.vposition !== 'here') {
+      subsection.elements.forEach((e) => { section.blocks[0].examples.push(e); });
+      subsection.done = true;
+    }
+  });
+  let block = section.blocks[0];
+  let pos;
+  subsections.filter(e => !e.done).forEach((subsection) => {
+    const newPos = subsection.position;
+    if (pos !== 'right' && newPos === 'right') {
+      const lastElement = block.content.pop();
+      if (block.content.length || block.examples.length) {
+        block = { content: [], examples: [] };
+      }
       section.blocks.push(block);
-      block = { content: [], examples: [] };
+      if (lastElement) {
+        block.content.push(lastElement);
+      }
     }
     pos = newPos;
-    const subblock = (pos === 'middle' ? block.content : block.examples);
+    const subblock = (pos !== 'right' ? block.content : block.examples);
     subsection.elements.forEach((e) => { subblock.push(e); });
   });
 
-  if (block.content.length || block.examples.length) {
-    section.blocks.push(block);
+  if (!block.content.length && !block.examples.length) {
+    section.blocks.pop();
   }
   delete section.dom;
   if (allLanguages.size && !allLanguages.has('generic')) {
