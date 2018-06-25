@@ -2,6 +2,9 @@
 
 This project uses [semantic versioning](http://semver.org/).
 
+## [0.9.7] 2018-06-25
+Merged fix for example/makeApidocsJson.js.
+
 ## [0.9.6] 2018-06-12
 Added example/makeApidocsJson.js.
 
