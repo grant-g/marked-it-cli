@@ -168,7 +168,7 @@ html.onComplete = (html, data) => {
   if (!sections[0].dom.length) sections.shift();
   sections.forEach((section) => { processSection(section); });
   localMap.swagger.info['x-documentation-sections'] = sections;
-  const outData = JSON.stringify(localMap.swagger, null, 2);
+  const outData = JSON.stringify(localMap.swagger);
   fs.writeFileSync(swaggerPath, outData);
 }
 module.exports.html = html;
