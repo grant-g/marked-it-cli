@@ -150,6 +150,7 @@ html.onComplete = (html, data) => {
     localMap.swagger = JSON.parse(fs.readFileSync(swaggerPath, 'utf8'));
     delete localMap.swagger.info['x-documentation-sections'];
   } catch (e) {
+    console.log(`Failed to parse ${swaggerPath}:`, e);
     localMap.swagger = { info: {} };
   }
   const newHtml = data.replaceVariables(html, null, localMap);
@@ -168,7 +169,7 @@ html.onComplete = (html, data) => {
   if (!sections[0].dom.length) sections.shift();
   sections.forEach((section) => { processSection(section); });
   localMap.swagger.info['x-documentation-sections'] = sections;
-  const outData = JSON.stringify(localMap.swagger, null, 2);
+  const outData = JSON.stringify(localMap.swagger);
   fs.writeFileSync(swaggerPath, outData);
 }
 module.exports.html = html;
