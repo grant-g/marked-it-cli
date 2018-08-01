@@ -150,6 +150,7 @@ html.onComplete = (html, data) => {
     localMap.swagger = JSON.parse(fs.readFileSync(swaggerPath, 'utf8'));
     delete localMap.swagger.info['x-documentation-sections'];
   } catch (e) {
+    console.log(`Failed to parse ${swaggerPath}:`, e);
     localMap.swagger = { info: {} };
   }
   const newHtml = data.replaceVariables(html, null, localMap);
