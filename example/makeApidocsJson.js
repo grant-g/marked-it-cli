@@ -73,7 +73,11 @@ function processSubsection(subsection, defaultLanguages, allLanguages) {
     const element = {type};
     if (type === 'code') {
       element.source = node.children[0].children.map(e => domToHtml(e));
-      if (lang[0] !== 'generic') element.lang = lang.join(' ') || undefined;
+      if (node.attribs && node.attribs['data-hd-programlang']) {
+        element.lang = node.attribs['data-hd-programlang'];
+      } else if (lang[0] !== 'generic') {
+        element.lang = lang.join(' ') || undefined;
+      }
     } else {
       element.source = [domToHtml(node)];
     }
