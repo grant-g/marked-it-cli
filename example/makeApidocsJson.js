@@ -39,7 +39,9 @@ function domToHtml(node) {
   newNode.attribs = Object.assign({}, node.attribs);
   delete newNode.attribs['data-hd-position'];
   delete newNode.attribs['data-hd-vposition'];
-  delete newNode.attribs['id'];
+  if (newNode.name !== 'a') {
+    delete newNode.attribs['id'];
+  }
   return common.domToHtml(newNode);
 }
 
