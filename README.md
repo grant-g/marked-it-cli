@@ -2,7 +2,7 @@
 
 A command-line interface for [marked-it](https://github.com/grant-g/marked-it "marked-it Git repo") that adds support for conref attributes, uniform headers/footers, and .pdf generation.
 
-## Install
+##  Install
 
 ``` bash
 npm install -g marked-it-cli
